@@ -9,3 +9,11 @@ test('converts single char ratings', t => {
   t.is(convertRating('e'), 'explicit')
   t.is(convertRating('r'), 'explicit')
 })
+
+test('converts full word ratings', t => {
+  t.plan(4)
+  t.is(convertRating('safe', 'full'), 'safe')
+  t.is(convertRating('suggestive', 'full'), 'questionable')
+  t.is(convertRating('questionable', 'full'), 'questionable')
+  t.is(convertRating('explicit', 'full'), 'explicit')
+})

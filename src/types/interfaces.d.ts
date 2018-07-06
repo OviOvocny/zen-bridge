@@ -3,7 +3,6 @@
   key: string
 } */
 
-
 interface PostsQuery {
   limit?: number
   page?: number
@@ -38,22 +37,12 @@ interface Post {
     previewHeight?: number
   }
   tagCount: {
-    [index: string]: number | undefined
     all: number
-    general: number
-    character?: number
-    copyright?: number
-    artist?: number
-    meta?: number
+    [other: string]: number
   }
   tags: {
-    [index: string]: string[] | undefined
     all: string[]
-    general: string[]
-    character?: string[]
-    copyright?: string[]
-    artist?: string[]
-    meta?: string[]
+    [other: string]: string[]
   }
   parent?: number
   children: number[]
@@ -63,10 +52,12 @@ interface Post {
 interface BooruType {
   responseType: encoding
   featureset: feature[]
-  postUriBuilder(query: PostsQuery | number): string
-  postConverter(d: any): Post
-  postResponseProcessor(query: PostsQuery, data: object): Post[]
-  // uriBuilder(target: string, query: object): string
-  // responseProcessor(target: string, data: object): any // Change to only possible interfaces
-  // authenticate?(base: string, credentials: Credentials): boolean
+  uriBuilder: {
+    post(id: number): string
+    posts(query: PostsQuery): string
+  }
+  dataParser: {
+    post(data: any): Post
+    posts(data: any): Post[]
+  }
 }

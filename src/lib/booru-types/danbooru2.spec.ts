@@ -8,12 +8,12 @@ test('correct post search uri', t => {
     tags: ['cat_girl', 'hairband'],
     random: true
   }
-  t.is(Danbooru2.postUriBuilder(postTestQuery), '/posts.json?limit=3&random=true&tags=cat_girl%20hairband')
+  t.is(Danbooru2.uriBuilder.posts(postTestQuery), '/posts.json?limit=3&random=true&tags=cat_girl%20hairband')
 })
 
 test('correct empty search uri', t => {
   const emptyTestQuery: PostsQuery = {}
-  t.is(Danbooru2.postUriBuilder(emptyTestQuery), '/posts.json')
+  t.is(Danbooru2.uriBuilder.posts(emptyTestQuery), '/posts.json')
 })
 
 test('correct overloaded search uri', t => {
@@ -22,5 +22,5 @@ test('correct overloaded search uri', t => {
     tags: ['cat_girl', 'hairband', 'lips'],
     random: false
   }
-  t.is(Danbooru2.postUriBuilder(postTestQuery), '/posts.json?limit=0&random=false&tags=cat_girl%20hairband')
+  t.is(Danbooru2.uriBuilder.posts(postTestQuery), '/posts.json?limit=0&random=false&tags=cat_girl%20hairband')
 })

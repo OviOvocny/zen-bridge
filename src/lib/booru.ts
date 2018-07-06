@@ -16,13 +16,19 @@ export default class Booru {
    */
   async searchPosts(query: PostsQuery): Promise<Post[]> {
     return new Promise<Post[]>((resolve, reject) => {
-      const href = this.service.postUriBuilder(query)
+      const href = this.service.uriBuilder.posts(query)
       axios.get(this.base + href).then(async res => {
         let result = res.data
+        // Convert XML if needed
         if (this.service.responseType === 'xml') {
           result = await convert(res.data)
         }
-        resolve(this.service.postResponseProcessor(query, result))
+        let postArr = this.service.dataParser.posts(result)
+        // Remove posts with unwanted tags
+        if (query.exclude) {
+          postArr = postArr.filter(post => !query.exclude!.some(tag => post.tags.all.includes(tag)))
+        }
+        resolve(postArr)
       }).catch(err => {
         reject(err)
       })
@@ -35,13 +41,13 @@ export default class Booru {
    */
   async getPostById(id: number): Promise<Post> {
     return new Promise<Post>((resolve, reject) => {
-      const href = this.service.postUriBuilder(id)
+      const href = this.service.uriBuilder.post(id)
       axios.get(this.base + href).then(async res => {
         let result = res.data
         if (this.service.responseType === 'xml') {
           result = await convert(res.data)
         }
-        resolve(this.service.postConverter(result))
+        resolve(this.service.dataParser.post(result))
       }).catch(err => {
         reject(err)
       })

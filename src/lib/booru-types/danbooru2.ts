@@ -1,27 +1,29 @@
 import { stringify as queryStringify } from 'query-string'
 import convertRating from './../utils/rating-converter'
 
-function postUriBuilder (query: PostsQuery | number): string {
-  if (typeof query === 'number') {
-    return `/posts/${query}.json`
-  } else {
-    const base = '/posts.json'
-    let queryString = ''
-    if (query.tags) {
-      let t = query.tags
-      // Danbooru limitation, probably done wrong
-      if (t.length > 2) {
-        t = t.slice(0, 2)
-      }
-      queryString = queryStringify({
-        ...query,
-        tags: t.join(' ')
-      })
-    } else {
-      queryString = queryStringify(query)
+const tagTypes = ['general', 'character', 'copyright', 'artist', 'meta']
+
+function postUriBuilder (id: number): string {
+  return `/posts/${id}.json`
+}
+
+function postsUriBuilder (query: PostsQuery): string {
+  const base = '/posts.json'
+  let queryString = ''
+  if (query.tags) {
+    let t = query.tags
+    // Danbooru limitation, probably done wrong
+    if (t.length > 2) {
+      t = t.slice(0, 2)
     }
-    return queryString === '' ? base : base + '?' + queryString
+    queryString = queryStringify({
+      ...query,
+      tags: t.join(' ')
+    })
+  } else {
+    queryString = queryStringify(query)
   }
+  return queryString === '' ? base : base + '?' + queryString
 }
 
 function postConverter (d: any): Post {
@@ -46,52 +48,34 @@ function postConverter (d: any): Post {
       height: d.image_height
     },
     tagCount: {
-      all: d.tag_count,
-      general: d.tag_count_general,
-      character: d.tag_count_character || 0,
-      copyright: d.tag_count_copyright || 0,
-      artist: d.tag_count_artist || 0,
-      meta: d.tag_count_meta || 0
+      all: d.tag_count
     },
     tags: {
-      all: d.tag_string.split(' '),
-      general: d.tag_string_general.split(' ')
+      all: d.tag_string.split(' ')
     },
     children: d.has_children ? d.children_ids.split(' ').map(parseFloat) : [],
     pools: d.pool_string ? d.pool_string.split(' ') : []
   }
   if (d.source) post.source = d.source
   if (d.parent_id) post.parent = parseInt(d.parent_id)
-  const tagTypes = ['character', 'copyright', 'artist', 'meta']
   tagTypes.forEach(type => {
-    if (post.tagCount[type] && post.tagCount[type]! > 0) {
+    if (d[`tag_count_${type}`]) {
+      post.tagCount[type] = d[`tag_count_${type}`]
       post.tags[type] = d[`tag_string_${type}`].split(' ')
     }
   })
   return post
 }
 
-function postResponseProcessor (query: PostsQuery, data: Array<any>): Post[] {
-  let posts: Post[] = []
-  data.forEach(d => {
-    const allTags = d.tag_string.split(' ')
-    // Skip posts with unwanted tags
-    if (query.exclude && query.exclude.length > 0) {
-      if (query.exclude.some(tag => allTags.includes(tag))) {
-        return
-      }
-    }
-    // Create post object
-    const post: Post = postConverter(d)
-    posts.push(post)
-  })
-  return posts
-}
-
 export const Danbooru2: BooruType = {
   responseType: 'json',
   featureset: ['login', 'posts', 'pools', 'artists', 'comments', 'notes', 'tags', 'md5'],
-  postUriBuilder,
-  postConverter,
-  postResponseProcessor
+  uriBuilder: {
+    post: postUriBuilder,
+    posts: postsUriBuilder
+  },
+  dataParser: {
+    post: postConverter,
+    posts: data => data.map(postConverter)
+  }
 }
