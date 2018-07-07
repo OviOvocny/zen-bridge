@@ -7,14 +7,10 @@ export default class ZenBridge {
     let results: Post[] = []
     let md5s: string[] = []
     this.services.forEach(async booru => {
-      const localResult = await booru.searchPosts(query)
+      const localResult = await booru.posts(query)
       localResult.forEach(post => {
         // Skip dupes if possible
-        if (booru.service.featureset.includes('md5')) {
-          if (md5s.includes(post.md5)) {
-            return
-          }
-        }
+        if (post.md5 && md5s.includes(post.md5)) return
         // Add post to results
         results.push(post)
       })

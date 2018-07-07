@@ -1,57 +1,37 @@
-import axios from 'axios'
-import convert from './utils/xml-converter'
+import dataFetcher from './utils/data-fetcher'
 
-export default class Booru {
-  /**
-   * Create an instance of a specific booru site
-   * @param service Functions that interact with a specific booru type
-   * @param base Base URI of a specific booru site
-   * @param safe Is this booru site SFW only?
-   */
-  constructor(readonly service: BooruType, public base: string, public safe: boolean = false) {}
+/**
+ * An instance of a specific booru site. 
+ * Has common methods for getting data from a booru.
+ * Can be used on its own or as a ZenBridge service.
+ */
+export default abstract class Booru {
+  /** True if this booru has a XML-based API */
+  abstract readonly xml: boolean
 
   /**
-   * Search this Booru for posts based on a query
-   * @param query The posts search query
+   * Create instance of a specific booru site
+   * @param base Base URI of a booru site
    */
-  async searchPosts(query: PostsQuery): Promise<Post[]> {
-    return new Promise<Post[]>((resolve, reject) => {
-      const href = this.service.uriBuilder.posts(query)
-      axios.get(this.base + href).then(async res => {
-        let result = res.data
-        // Convert XML if needed
-        if (this.service.responseType === 'xml') {
-          result = await convert(res.data)
-        }
-        let postArr = this.service.dataParser.posts(result)
-        // Remove posts with unwanted tags
-        if (query.exclude) {
-          postArr = postArr.filter(post => !query.exclude!.some(tag => post.tags.all.includes(tag)))
-        }
-        resolve(postArr)
-      }).catch(err => {
-        reject(err)
-      })
-    })
+  constructor (public base: string) {}
+  
+  /**
+   * GET an API call result as an object
+   * @param path Part of the URI appended to the base
+   */
+  protected fetch (path: string): Promise<any> {
+    return dataFetcher(this.base, path, this.xml)
   }
 
   /**
-   * Fetch a single post by ID
-   * @param id Numeric ID of the post
+   * Get a single Post by ID
+   * @param id ID of the post
    */
-  async getPostById(id: number): Promise<Post> {
-    return new Promise<Post>((resolve, reject) => {
-      const href = this.service.uriBuilder.post(id)
-      axios.get(this.base + href).then(async res => {
-        let result = res.data
-        if (this.service.responseType === 'xml') {
-          result = await convert(res.data)
-        }
-        resolve(this.service.dataParser.post(result))
-      }).catch(err => {
-        reject(err)
-      })
-    })
-  }
+  abstract post (id: number): Promise<Post>
 
+  /**
+   * Get an array of Posts that match a query
+   * @param query Posts search query object
+   */
+  abstract posts (query: PostsQuery): Promise<Post[]>
 }
