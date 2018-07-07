@@ -1,3 +1,3 @@
 # zen-bridge
 
-A multi-booru search interface
+A module for interacting with multiple image boards (booru) at once

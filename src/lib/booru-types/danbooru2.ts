@@ -26,8 +26,10 @@ export default class Danbooru2 extends Booru {
     const tagTypes = ['general', 'character', 'copyright', 'artist', 'meta']
     const post: Post = {
       id: parseInt(d.id),
+      active: !d.is_deleted,
       createdAt: d.created_at,
-      uploaderId: d.uploader_id,
+      userId: d.uploader_id,
+      userName: d.uploader_name,
       md5: d.md5,
       rating: convertRating(d.rating, 'char'),
       votes: {
