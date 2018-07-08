@@ -109,7 +109,7 @@ interface Comment extends Data {
  * They are used to annotate a part of the image or to translate text in the image, for example speech bubbles in comics.
  */
 interface Note extends Data {
-  /** ID of the note this comment belongs to */
+  /** ID of the post this note belongs to */
   postId: number
   /** Position on top of the image */
   position: {
