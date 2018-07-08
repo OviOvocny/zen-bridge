@@ -3,7 +3,7 @@ import Booru from './lib/booru';
 export default class ZenBridge {
   constructor(public services: Booru[], public ratingFilter: rating[] | boolean = false) {}
 
-  async posts(query: PostsQuery): Promise<Post[]> {
+  async posts(query: Query.Posts): Promise<Post[]> {
     let results: Post[] = []
     let md5s: string[] = []
     this.services.forEach(async booru => {

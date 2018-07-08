@@ -12,7 +12,7 @@ export default class Danbooru2 extends Booru {
     return this.fetch(UriBuilder.post(id)).then(data => this.postConverter(data))
   }
 
-  posts (query: PostsQuery): Promise<Post[]> {
+  posts (query: Query.Posts): Promise<Post[]> {
     return this.fetch(UriBuilder.posts(query))
       .then((data: Array<object>) => data.map(this.postConverter))
       .then((posts: Post[]) => query.exclude ? posts.filter(post => !query.exclude!.some(tag => post.tags.all.includes(tag))) : posts)
@@ -20,47 +20,49 @@ export default class Danbooru2 extends Booru {
 
   /**
    * Create a Post from an API response
-   * @param d A post object from the API
+   * @param data A post object from the API
    */
-  private postConverter (d: any): Post {
+  private postConverter (data: any): Post {
     const tagTypes = ['general', 'character', 'copyright', 'artist', 'meta']
     const post: Post = {
-      id: parseInt(d.id),
-      active: !d.is_deleted,
-      createdAt: d.created_at,
-      userId: d.uploader_id,
-      userName: d.uploader_name,
-      md5: d.md5,
-      rating: convertRating(d.rating, 'char'),
+      id: parseInt(data.id),
+      active: !data.is_deleted,
+      createdAt: data.created_at,
+      creator: {
+        id: data.uploader_id,
+        name: data.uploader_name
+      },
+      md5: data.md5,
+      rating: convertRating(data.rating, 'char'),
       votes: {
-        up: d.up_score,
-        down: d.down_score,
-        score: d.up_score - d.down_score
+        up: data.up_score,
+        down: data.down_score,
+        score: data.up_score - data.down_score
       },
       files: {
-        full: d.file_url,
-        sample: d.large_file_url,
-        preview: d.preview_file_url
+        full: data.file_url,
+        sample: data.large_file_url,
+        preview: data.preview_file_url
       },
       dimensions: {
-        width: d.image_width,
-        height: d.image_height
+        width: data.image_width,
+        height: data.image_height
       },
       tagCount: {
-        all: d.tag_count
+        all: data.tag_count
       },
       tags: {
-        all: d.tag_string.split(' ')
+        all: data.tag_string.split(' ')
       },
-      children: d.has_children ? d.children_ids.split(' ').map(parseFloat) : [],
-      pools: d.pool_string ? d.pool_string.split(' ') : []
+      children: data.has_children ? data.children_ids.split(' ').map(parseFloat) : [],
+      pools: data.pool_string ? data.pool_string.split(' ') : []
     }
-    if (d.source) post.source = d.source
-    if (d.parent_id) post.parent = parseInt(d.parent_id)
+    if (data.source) post.source = data.source
+    if (data.parent_id) post.parent = parseInt(data.parent_id)
     tagTypes.forEach(type => {
-      if (d[`tag_count_${type}`]) {
-        post.tagCount[type] = d[`tag_count_${type}`]
-        post.tags[type] = d[`tag_string_${type}`].split(' ')
+      if (data[`tag_count_${type}`]) {
+        post.tagCount[type] = data[`tag_count_${type}`]
+        post.tags[type] = data[`tag_string_${type}`].split(' ')
       }
     })
     return post
@@ -72,7 +74,7 @@ class UriBuilder {
     return `/posts/${id}.json`
   }
 
-  static posts (query: PostsQuery): string {
+  static posts (query: Query.Posts): string {
     const base = '/posts.json'
     let queryString = ''
     if (query.tags) {

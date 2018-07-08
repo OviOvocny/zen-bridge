@@ -33,5 +33,5 @@ export default abstract class Booru {
    * Get an array of Posts that match a query
    * @param query Posts search query object
    */
-  abstract posts (query: PostsQuery): Promise<Post[]>
+  abstract posts (query: Query.Posts): Promise<Post[]>
 }
