@@ -12,7 +12,7 @@ class Danbooru2 extends Booru {
     return this.fetch((<any>Danbooru2.UriBuilder)[type](id)).then(data => <T>(<any>Danbooru2.Converter)[type](data))
   }
 
-  private genericQuery<T> (type: string, query: any): Promise<T[]> {
+  private genericQuery<T> (type: string, query: Query.Any): Promise<T[]> {
     return this.fetch((<any>Danbooru2.UriBuilder)[`${type}s`](query))
       .then((data: Array<object>) => <T[]>data.map((<any>Danbooru2.Converter)[type]))
   }

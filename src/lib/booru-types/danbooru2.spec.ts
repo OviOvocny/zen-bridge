@@ -164,7 +164,7 @@ test.serial('searches pools', t => {
     nameMatches: 'idolmaster'
   }).then(arr => {
     t.truthy(arr[0])
-    t.is(arr[0].id, 5674)
+    t.regex(arr[0].name, /idolmaster/i)
   }).catch(err => {
     t.fail(err)
   })

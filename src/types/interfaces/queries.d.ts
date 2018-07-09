@@ -2,9 +2,7 @@
  * Contains interfaces used to query an API endpoint via a Booru method
  */
 declare namespace Query {
-  /**
-   * An users search query
-   */
+  /** An users search query */
   interface Users {
     /** Username to match (can be a pattern) */
     nameMatches?: string
@@ -14,9 +12,7 @@ declare namespace Query {
     level?: number | range
   }
 
-  /**
-   * A posts search query
-   */
+  /** A posts search query */
   interface Posts {
     /** Maximum number of posts to fetch */
     limit?: number
@@ -83,4 +79,7 @@ declare namespace Query {
     /** Order of results */
     order?: string
   }
+
+  /** Type compatibile with any [[Query]] */
+  type Any = Artists | Comments | Notes | Pools | Posts | Users | Wikis
 }
