@@ -18,3 +18,11 @@ test('converts full word ratings', t => {
   t.is(convertRating('questionable', 'full'), 'questionable')
   t.is(convertRating('explicit', 'full'), 'explicit')
 })
+
+test('char form returns expicit for unknowns', t => {
+  t.is(convertRating('a', 'char'), 'explicit')
+})
+
+test('returns expicit for unknown forms', t => {
+  t.is(convertRating('anything', 'nani'), 'explicit')
+})

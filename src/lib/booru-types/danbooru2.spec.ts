@@ -17,11 +17,25 @@ test('gets a post', t => {
     })
 })
 
-test.serial('searches posts', t => {
+test('searches posts', t => {
   return b
     .posts({
       limit: 2,
       random: true
+    })
+    .then(arr => {
+      t.truthy(arr.length === 2)
+    })
+    .catch(err => {
+      t.fail(err)
+    })
+})
+
+test('slices tags to 2', t => {
+  return b
+    .posts({
+      limit: 2,
+      tags: ['cat_girl', 'cat_ears', 'cat_tail']
     })
     .then(arr => {
       t.truthy(arr.length === 2)
@@ -68,7 +82,7 @@ test('gets an artist', t => {
     })
 })
 
-test.serial('searches artists', t => {
+test('searches artists', t => {
   t.plan(2)
   const q = 'momiji'
   return b
@@ -103,7 +117,7 @@ test('gets a comment', t => {
     })
 })
 
-test.serial('searches comments', t => {
+test('searches comments', t => {
   return b
     .comments({
       creator: {
@@ -152,7 +166,7 @@ test('gets a note', t => {
     })
 })
 
-test.serial('searches notes', t => {
+test('searches notes', t => {
   return b
     .notes({
       contentMatches: 'Chii?',
@@ -202,7 +216,7 @@ test('gets a pool', t => {
     })
 })
 
-test.serial('searches pools', t => {
+test('searches pools', t => {
   return b
     .pools({
       nameMatches: 'idolmaster'
@@ -210,6 +224,23 @@ test.serial('searches pools', t => {
     .then(arr => {
       t.truthy(arr[0])
       t.regex(arr[0].name, /idolmaster/i)
+    })
+    .catch(err => {
+      t.fail(err)
+    })
+})
+
+test('searches pools by user', t => {
+  return b
+    .pools({
+      creator: {
+        id: 1,
+        name: 'albert'
+      }
+    })
+    .then(arr => {
+      t.truthy(arr[0])
+      t.is(arr[0].creator!.id, 1)
     })
     .catch(err => {
       t.fail(err)
@@ -229,7 +260,7 @@ test('gets an user', t => {
     })
 })
 
-test.serial('searches users', t => {
+test('searches users', t => {
   return b
     .users({
       nameMatches: 'albert'
@@ -237,6 +268,48 @@ test.serial('searches users', t => {
     .then(arr => {
       t.truthy(arr[0])
       t.is(arr[0].id, 1)
+    })
+    .catch(err => {
+      t.fail(err)
+    })
+})
+
+test('searches users with exact level', t => {
+  return b
+    .users({
+      level: 50
+    })
+    .then(arr => {
+      t.truthy(arr[0])
+      t.is(arr[0].level, 50)
+    })
+    .catch(err => {
+      t.fail(err)
+    })
+})
+
+test('searches users in level range', t => {
+  return b
+    .users({
+      level: [40, 50]
+    })
+    .then(arr => {
+      t.truthy(arr[0])
+      t.truthy(arr[0].level === 50 || arr[0].level === 40)
+    })
+    .catch(err => {
+      t.fail(err)
+    })
+})
+
+test('searches users in undefined level range', t => {
+  return b
+    .users({
+      level: [undefined, undefined]
+    })
+    .then(arr => {
+      t.truthy(arr[0])
+      t.truthy(typeof arr[0].level === 'number')
     })
     .catch(err => {
       t.fail(err)
@@ -256,7 +329,7 @@ test('gets a wiki page', t => {
     })
 })
 
-test.serial('searches wiki pages', t => {
+test('searches wiki pages', t => {
   return b
     .wikis({
       title: 'help:api'
@@ -264,6 +337,23 @@ test.serial('searches wiki pages', t => {
     .then(arr => {
       t.truthy(arr[0])
       t.is(arr[0].id, 43568)
+    })
+    .catch(err => {
+      t.fail(err)
+    })
+})
+
+test('searches wiki pages by user', t => {
+  return b
+    .wikis({
+      creator: {
+        id: 1,
+        name: 'albert'
+      }
+    })
+    .then(arr => {
+      t.truthy(arr[0])
+      t.is(arr[0].creator!.id, 1)
     })
     .catch(err => {
       t.fail(err)

@@ -1,7 +1,7 @@
 import Booru from './lib/booru'
 
 /** Contains results from a booru site with additional metadata */
-interface BooruResult<T> {
+export interface BooruResult<T> {
   /** Base URI of the booru site */
   base: string
   /** Array of results from the booru site or error (check status) */
@@ -38,9 +38,8 @@ export default class ZenBridge {
       let final = true
       data.forEach(d => {
         if (d.name === current.name) {
-          if (d.links && current.links) {
-            final = !d.links.some(dl => current.links.some(cl => dl === cl))
-          }
+          // final = !d.links.some(dl => current.links.some(cl => dl === cl))
+          final = false
         }
       })
       return final
@@ -108,7 +107,12 @@ export default class ZenBridge {
         data:
           res.status === 'ok'
             ? res.data.filter((d: T) =>
-                comparer(d, Array.prototype.concat(filtered.map(f => f.data)))
+                comparer(
+                  d,
+                  filtered
+                    .map(f => f.data)
+                    .reduce((acc, val) => acc.concat(val), [])
+                )
               )
             : res.data,
         status: res.status
