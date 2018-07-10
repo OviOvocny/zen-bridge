@@ -1,5 +1,5 @@
-import Booru from './../booru'
 import { stringify as queryStringify } from 'query-string'
+import Booru from './../booru'
 import convertRating from './../utils/rating-converter'
 
 /**
@@ -7,15 +7,6 @@ import convertRating from './../utils/rating-converter'
  */
 class Danbooru2 extends Booru {
   readonly xml = false
-
-  private genericSingle<T> (type: string, id: number): Promise<T> {
-    return this.fetch((<any>Danbooru2.UriBuilder)[type](id)).then(data => <T>(<any>Danbooru2.Converter)[type](data))
-  }
-
-  private genericQuery<T> (type: string, query: Query.Any): Promise<T[]> {
-    return this.fetch((<any>Danbooru2.UriBuilder)[`${type}s`](query))
-      .then((data: Array<object>) => <T[]>data.map((<any>Danbooru2.Converter)[type]))
-  }
 
   post (id: number) {
     return this.genericSingle<Post>('post', id)
@@ -43,12 +34,15 @@ class Danbooru2 extends Booru {
   comments (query: Query.Comments | Post) {
     if (query.hasOwnProperty('id')) {
       // This is a Post, fill in the comments field
-      const post = <Post>query
-      return this.genericQuery<Comment>('comment', <Query.Comments>{
+      const post = query as Post
+      return this.genericQuery<Comment>('comment', {
         postId: post.id
-      }).then(commentArr => {
-        post.comments = commentArr
-        return post
+      }).then(comments => {
+        const populated: Post = {
+          ...post,
+          comments
+        }
+        return populated
       })
     } else {
       // This is a query, get comments array
@@ -65,12 +59,15 @@ class Danbooru2 extends Booru {
   notes (query: Query.Notes | Post) {
     if (query.hasOwnProperty('id')) {
       // This is a Post, fill in the comments field
-      const post = <Post>query
-      return this.genericQuery<Note>('note', <Query.Notes>{
+      const post = query as Post
+      return this.genericQuery<Note>('note', {
         postId: post.id
-      }).then(noteArr => {
-        post.notes = noteArr
-        return post
+      }).then(notes => {
+        const populated: Post = {
+          ...post,
+          notes
+        }
+        return populated
       })
     } else {
       // This is a query, get comments array
@@ -102,9 +99,18 @@ class Danbooru2 extends Booru {
     return this.genericQuery<Wiki>('wiki', query)
   }
 
+  private genericSingle<T> (type: string, id: number): Promise<T> {
+    return this.fetch((Danbooru2UriBuilder as any)[type](id)).then(data => (Danbooru2Converter as any)[type](data) as T)
+  }
+
+  private genericQuery<T> (type: string, query: Query.Any): Promise<T[]> {
+    return this.fetch((Danbooru2UriBuilder as any)[`${type}s`](query))
+      .then((data: object[]) => data.map((Danbooru2Converter as any)[type]) as T[])
+  }
+
 }
 
-Danbooru2.UriBuilder = {
+const Danbooru2UriBuilder: UriBuilder = {
   post (id: number): string {
     return `/posts/${id}.json`
   },
@@ -142,9 +148,9 @@ Danbooru2.UriBuilder = {
       'group_by': 'comment',
       ...query,
       'search[body_matches]': query.contentMatches,
-      'search[post_id]': query.postId,
       'search[creator_id]': query.creator ? query.creator.id : undefined,
-      'search[creator_name]': query.creator ? query.creator.name : undefined
+      'search[creator_name]': query.creator ? query.creator.name : undefined,
+      'search[post_id]': query.postId
     })
   },
   note (id: number): string {
@@ -153,9 +159,9 @@ Danbooru2.UriBuilder = {
   notes (query: Query.Notes): string {
     return '/notes.json?' + queryStringify({
       'search[body_matches]': query.contentMatches,
-      'search[post_id]': query.postId,
       'search[creator_id]': query.creator ? query.creator.id : undefined,
-      'search[creator_name]': query.creator ? query.creator.name : undefined
+      'search[creator_name]': query.creator ? query.creator.name : undefined,
+      'search[post_id]': query.postId
     })
   },
   pool (id: number): string {
@@ -163,10 +169,10 @@ Danbooru2.UriBuilder = {
   },
   pools (query: Query.Pools): string {
     return '/pools.json?' + queryStringify({
-      'search[name_matches]': query.nameMatches,
-      'search[order]': query.order,
       'search[creator_id]': query.creator ? query.creator.id : undefined,
-      'search[creator_name]': query.creator ? query.creator.name : undefined
+      'search[creator_name]': query.creator ? query.creator.name : undefined,
+      'search[name_matches]': query.nameMatches,
+      'search[order]': query.order
     })
   },
   user (id: number): string {
@@ -192,53 +198,53 @@ Danbooru2.UriBuilder = {
   },
   wikis (query: Query.Wikis): string {
     return '/wiki_pages.json?' + queryStringify({
-      'search[title]': query.title,
       'search[body_matches]': query.contentMatches,
-      'search[order]': query.order,
       'search[creator_id]': query.creator ? query.creator.id : undefined,
-      'search[creator_name]': query.creator ? query.creator.name : undefined
+      'search[creator_name]': query.creator ? query.creator.name : undefined,
+      'search[order]': query.order,
+      'search[title]': query.title
     })
   }
 }
 
-Danbooru2.Converter = {
+const Danbooru2Converter: Converter = {
   post (data: any): Post {
     const tagTypes = ['general', 'character', 'copyright', 'artist', 'meta']
     const post: Post = {
-      id: parseInt(data.id),
       active: !data.is_deleted,
+      children: data.has_children ? data.children_ids.split(' ').map(parseFloat) : [],
       createdAt: data.created_at,
       creator: {
         id: data.uploader_id,
         name: data.uploader_name
       },
-      md5: data.md5,
-      rating: convertRating(data.rating, 'char'),
-      votes: {
-        up: data.up_score,
-        down: data.down_score,
-        score: data.up_score - data.down_score
+      dimensions: {
+        height: data.image_height,
+        width: data.image_width
       },
       files: {
         full: data.file_url,
-        sample: data.large_file_url,
-        preview: data.preview_file_url
+        preview: data.preview_file_url,
+        sample: data.large_file_url
       },
-      dimensions: {
-        width: data.image_width,
-        height: data.image_height
-      },
+      id: parseInt(data.id, 10),
+      md5: data.md5,
+      parent: data.parent_id ? parseInt(data.parent_id, 10) : undefined,
+      pools: data.pool_string ? data.pool_string.split(' ') : [],
+      rating: convertRating(data.rating, 'char'),
+      source: data.source,
       tagCount: {
         all: data.tag_count
       },
       tags: {
         all: data.tag_string.split(' ')
       },
-      children: data.has_children ? data.children_ids.split(' ').map(parseFloat) : [],
-      pools: data.pool_string ? data.pool_string.split(' ') : []
+      votes: {
+        down: data.down_score,
+        score: data.up_score - data.down_score,
+        up: data.up_score
+      }
     }
-    if (data.source) post.source = data.source
-    if (data.parent_id) post.parent = parseInt(data.parent_id)
     tagTypes.forEach(type => {
       if (data[`tag_count_${type}`]) {
         post.tagCount[type] = data[`tag_count_${type}`]
@@ -249,90 +255,90 @@ Danbooru2.Converter = {
   },
   user (data: any): User {
     return {
-      id: data.id,
-      name: data.name,
       banned: data.is_banned,
-      level: data.level
+      id: data.id,
+      level: data.level,
+      name: data.name
     }
   },
   comment (data: any): Comment {
     return {
-      id: data.id,
-      createdAt: data.created_at,
       active: !data.is_deleted,
+      content: data.body,
+      createdAt: data.created_at,
       creator: {
         id: data.creator_id,
         name: data.creator_name
       },
-      content: data.body,
+      id: data.id,
       postId: data.post_id,
       score: data.score
     }
   },
   note (data: any): Note {
     return {
-      id: data.id,
-      createdAt: data.created_at,
       active: data.is_active,
+      content: data.body,
+      createdAt: data.created_at,
       creator: {
         id: data.creator_id,
         name: data.creator_name
       },
-      content: data.body,
-      postId: data.post_id,
+      dimensions: {
+        height: data.height,
+        width: data.width
+      },
+      id: data.id,
       position: {
         x: data.x,
         y: data.y
       },
-      dimensions: {
-        width: data.width,
-        height: data.height
-      }
+      postId: data.post_id
     }
   },
   artist (data: any): Artist {
     return {
-      id: data.id,
-      createdAt: data.created_at,
+      about: data.notes,
       active: data.is_active,
+      aliases: data.other_names.split(' '),
+      createdAt: data.created_at,
       creator: {
         id: data.creator_id
       },
-      name: data.name,
-      aliases: data.other_names.split(' '),
       group: data.group_name,
+      id: data.id,
       links: data.urls.map((obj: any) => obj.url),
-      about: data.notes
+      name: data.name
     }
   },
   pool (data: any): Pool {
     return {
-      id: data.id,
-      createdAt: data.created_at,
       active: data.is_active,
+      category: data.category,
+      createdAt: data.created_at,
       creator: {
         id: data.creator_id,
         name: data.creator_name
       },
+      description: data.description,
+      id: data.id,
       name: data.name,
-      category: data.category,
       postCount: data.post_count,
-      postIds: data.post_ids.split(' ').map(parseFloat),
-      description: data.description
+      postIds: data.post_ids.split(' ').map(parseFloat)
     }
   },
   wiki (data: any): Wiki {
     return {
-      id: data.id,
-      createdAt: data.created_at,
       active: !data.is_deleted,
+      aliases: data.other_names,
+      content: data.body,
+      createdAt: data.created_at,
       creator: {
         id: data.creator_id,
         name: data.creator_name
       },
-      title: data.title,
-      content: data.body,
-      aliases: data.other_names
+      id: data.id,
+      title: data.title
     }
   }
 }

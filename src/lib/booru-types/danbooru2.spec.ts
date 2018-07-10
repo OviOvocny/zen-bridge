@@ -1,4 +1,5 @@
 // tslint:disable:no-expression-statement
+// tslint:disable:object-literal-sort-keys
 import { test } from 'ava'
 import Danbooru2 from './danbooru2'
 
@@ -8,7 +9,7 @@ test('gets a post', t => {
   return b.post(1).then(content => {
     t.truthy(typeof content === 'object')
   }).catch(err => {
-    console.error(err)
+    t.log(err)
     t.fail()
   })
 })
@@ -18,7 +19,7 @@ test.serial('searches posts', t => {
     limit: 2,
     random: true
   }).then(arr => {
-    t.truthy(arr.length == 2)
+    t.truthy(arr.length === 2)
   }).catch(err => {
     t.fail(err)
   })
@@ -30,7 +31,7 @@ test('excludes tags', t => {
     tags: ['umbrella'],
     exclude: ['umbrella']
   }).then(arr => {
-    t.truthy(arr.length == 0)
+    t.truthy(arr.length === 0)
   }).catch(err => {
     t.fail(err)
   })

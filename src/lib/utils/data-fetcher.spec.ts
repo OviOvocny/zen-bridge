@@ -1,4 +1,5 @@
 // tslint:disable:no-expression-statement
+// tslint:disable:object-literal-sort-keys
 import { test } from 'ava'
 import dataFetcher from './data-fetcher'
 

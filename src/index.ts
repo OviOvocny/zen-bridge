@@ -15,69 +15,6 @@ interface BooruResult<T> {
  */
 export default class ZenBridge {
   /**
-   * Create a ZenBridge with predefined set of Boorus to interface with
-   * @param services Array of instances of Booru-compatibiles
-   */
-  constructor(public services: Booru[]) {}
-
-  /**
-   * Query all provided [[Booru]]s simultaneously
-   * @typeparam T One of booru [[Data]] interface types
-   * @param type Query type to execute as a string index
-   * @param query Query object with search parameters
-   * @returns Array of BooruResult objects (site base URI and results from that site)
-   */
-  query<T> (type: string, query: Query.Any): Promise<BooruResult<T>[]> {
-    let promises: Array<Promise<T[]>> = []
-    this.services.forEach(async booru => {
-      promises.push((<any>booru)[type](query))
-    })
-    return Promise.all(promises.map(p => 
-      p.then(r => ({data: r, status: 'ok' }), e => ({data: e, status: 'error' }))))
-      .then(arrays => 
-        arrays.map((data, i) => 
-          ({
-            base: this.services[i].base,
-            ...data
-          })
-        )
-      )
-  }
-
-  /**
-   * Returns a copy of [[BooruResult]] array with duplicate records removed
-   * @typeparam T One of booru [[Data]] interface types
-   * @param data Array of BooruResult objects to search through
-   * @param comparer A function that tests every record in BooruResult data against records in the first dataset and returns true if the record is unique (eg. NOT a duplicate)
-   */
-  dedupe<T> (data: BooruResult<T>[], comparer: (current: T, data: T[]) => boolean): BooruResult<T>[] {
-    // End right away if results from only one site are passed
-    if (data.length == 1) return data
-    let filtered: Array<BooruResult<T>> = [ data[0] ]
-    data.slice(1).forEach(res => {
-      filtered.push({
-        base: res.base,
-        data: res.status === 'ok' ? res.data.filter((d: T) => 
-          comparer(d, Array.prototype.concat(filtered.map(f => f.data)))
-        ) : res.data,
-        status: res.status
-      })
-    })
-    return filtered
-  }
-
-  /**
-   * Runs a query and automatically dedupes in one go
-   * @typeparam T One of booru [[Data]] interface types
-   * @param type Query type to execute as a string index
-   * @param query Query object with search parameters
-   * @param comparer Comparer function for [[dedupe]] (if not provided, built-in comparer is used based on the query type)
-   */
-  aggregate<T> (type: string, query: Query.Any, comparer?: (record: T) => boolean): Promise<BooruResult<T>[]> {
-    return this.query<T>(type, query).then(res => this.dedupe<T>(res, comparer || ZenBridge.builtInComparers[type] || (() => true)))
-  }
-
-  /**
    * Collection of built-in comparer functions for the [[dedupe]] method.
    * Note that not all [[Data]] types are covered as for some deduping would not make sense.
    * You can of course provide your own comparer to [[dedupe]] if you want to dedupe those.
@@ -108,11 +45,75 @@ export default class ZenBridge {
       })
       return final
     },
-    /** Tries to dedupe a collection of [[Comment]]s based on their content 
+    /** 
+     * Tries to dedupe a collection of [[Comment]]s based on their content 
      * (use with caution, this is potentially too aggressive for short-form comments). 
      */
     comments (current: Comment, data: Comment[]): boolean {
       return !data.some(d => d.content === current.content)
     }
+  }
+
+  /**
+   * Create a ZenBridge with predefined set of Boorus to interface with
+   * @param services Array of instances of Booru-compatibiles
+   */
+  constructor(public services: Booru[]) {}
+
+  /**
+   * Query all provided [[Booru]]s simultaneously
+   * @typeparam T One of booru [[Data]] interface types
+   * @param type Query type to execute as a string index
+   * @param query Query object with search parameters
+   * @returns Array of BooruResult objects (site base URI and results from that site)
+   */
+  query<T> (type: string, query: Query.Any): Promise<Array<BooruResult<T>>> {
+    const promises: Array<Promise<T[]>> = []
+    this.services.forEach(async booru => {
+      promises.push((booru as any)[type](query))
+    })
+    return Promise.all(promises.map(p => 
+      p.then(r => ({data: r, status: 'ok' }), e => ({data: e, status: 'error' }))))
+      .then(arrays => 
+        arrays.map((data, i) => 
+          ({
+            base: this.services[i].base,
+            ...data
+          })
+        )
+      )
+  }
+
+  /**
+   * Returns a copy of [[BooruResult]] array with duplicate records removed
+   * @typeparam T One of booru [[Data]] interface types
+   * @param data Array of BooruResult objects to search through
+   * @param comparer A function that tests every record in BooruResult data against records in the first dataset and returns true if the record is unique (eg. NOT a duplicate)
+   */
+  dedupe<T> (data: Array<BooruResult<T>>, comparer: (current: T, data: T[]) => boolean): Array<BooruResult<T>> {
+    // End right away if results from only one site are passed
+    if (data.length === 1) { return data }
+    const filtered: Array<BooruResult<T>> = [ data[0] ]
+    data.slice(1).forEach(res => {
+      filtered.push({
+        base: res.base,
+        data: res.status === 'ok' ? res.data.filter((d: T) => 
+          comparer(d, Array.prototype.concat(filtered.map(f => f.data)))
+        ) : res.data,
+        status: res.status
+      })
+    })
+    return filtered
+  }
+
+  /**
+   * Runs a query and automatically dedupes in one go
+   * @typeparam T One of booru [[Data]] interface types
+   * @param type Query type to execute as a string index
+   * @param query Query object with search parameters
+   * @param comparer Comparer function for [[dedupe]] (if not provided, built-in comparer is used based on the query type)
+   */
+  aggregate<T> (type: string, query: Query.Any, comparer?: (record: T) => boolean): Promise<Array<BooruResult<T>>> {
+    return this.query<T>(type, query).then(res => this.dedupe<T>(res, comparer || ZenBridge.builtInComparers[type] || (() => true)))
   }
 }

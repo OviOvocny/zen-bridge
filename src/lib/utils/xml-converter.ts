@@ -1,5 +1,6 @@
 import { parseString } from 'xml2js'
-import { parseNumbers, parseBooleans } from 'xml2js/lib/processors';
+// tslint:disable-next-line:no-submodule-imports
+import { parseBooleans, parseNumbers } from 'xml2js/lib/processors';
 
 /**
  * Converts a XML-based booru API response to an object 
