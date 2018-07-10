@@ -10,7 +10,7 @@ export interface BooruResult<T> {
   status: string
 }
 
-/** 
+/**
  * Describes a function that test elements of BooruResult.data for uniqueness. See one of the [[builtInComparers]] for an example.
  * @typeparam T One of booru [[Data]] interface types
  * @param . current: The current element being tested
@@ -68,9 +68,7 @@ export default class ZenBridge {
    * @typeparam T One of booru [[Data]] interface types
    * @param data [[BooruResult]]s to merge
    */
-  static merge<T>(
-    data: Array<BooruResult<T>>
-  ): T[] {
+  static merge<T>(data: Array<BooruResult<T>>): T[] {
     return data
       .filter(d => d.status === 'ok')
       .map(d => d.data)
@@ -130,12 +128,7 @@ export default class ZenBridge {
         base: res.base,
         data:
           res.status === 'ok'
-            ? res.data.filter((d: T) =>
-                comparer(
-                  d,
-                  ZenBridge.merge(filtered)
-                )
-              )
+            ? res.data.filter((d: T) => comparer(d, ZenBridge.merge(filtered)))
             : res.data,
         status: res.status
       })
@@ -163,6 +156,5 @@ export default class ZenBridge {
     )
   }
 }
-
 
 export * from './lib/booru-types'
