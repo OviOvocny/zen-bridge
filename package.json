@@ -7,7 +7,12 @@
   "module": "build/module/index.js",
   "repository": "https://github.com/OviOvocny/zen-bridge",
   "license": "MIT",
-  "keywords": ["booru", "json", "typescript", "promise"],
+  "keywords": [
+    "booru",
+    "json",
+    "typescript",
+    "promise"
+  ],
   "scripts": {
     "info": "npm-scripts-info",
     "build": "run-s clean && run-p build:*",
@@ -51,13 +56,13 @@
     "node": ">=8.9"
   },
   "dependencies": {
-    "@types/query-string": "^6.1.0",
-    "@types/xml2js": "^0.4.3",
     "axios": "^0.18.0",
     "query-string": "^6.1.0",
     "xml2js": "^0.4.19"
   },
   "devDependencies": {
+    "@types/query-string": "^6.1.0",
+    "@types/xml2js": "^0.4.3",
     "ava": "^1.0.0-beta.5.1",
     "codecov": "^3.0.2",
     "cz-conventional-changelog": "^2.1.0",
