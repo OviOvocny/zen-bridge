@@ -20,7 +20,7 @@ test('converts sample xml', t => {
       preview_width: 150,
       preview_height: 120
     },
-    { 
+    {
       height: 1600,
       score: 8,
       file_url: 'https://simg3.gelbooru.com/2.png',

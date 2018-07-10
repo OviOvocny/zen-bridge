@@ -1,7 +1,7 @@
 // tslint:disable:no-expression-statement
 // tslint:disable:object-literal-sort-keys
 import { test } from 'ava'
-import convertRating from './rating-converter';
+import convertRating from './rating-converter'
 
 test('converts single char ratings', t => {
   t.plan(4)

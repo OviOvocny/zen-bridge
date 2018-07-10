@@ -8,30 +8,36 @@ import convertRating from './../utils/rating-converter'
 class Danbooru2 extends Booru {
   readonly xml = false
 
-  post (id: number) {
+  post(id: number) {
     return this.genericSingle<Post>('post', id)
   }
 
-  posts (query: Query.Posts) {
-    return this.genericQuery<Post>('post', query)
-      .then((posts: Post[]) => query.exclude ? posts.filter(post => !query.exclude!.some(tag => post.tags.all.includes(tag))) : posts)
+  posts(query: Query.Posts) {
+    return this.genericQuery<Post>('post', query).then(
+      (posts: Post[]) =>
+        query.exclude
+          ? posts.filter(
+              post => !query.exclude!.some(tag => post.tags.all.includes(tag))
+            )
+          : posts
+    )
   }
 
-  artist (id: number) {
+  artist(id: number) {
     return this.genericSingle<Artist>('artist', id)
   }
 
-  artists (query: Query.Artists) {
+  artists(query: Query.Artists) {
     return this.genericQuery<Artist>('artist', query)
   }
 
-  comment (id: number) {
+  comment(id: number) {
     return this.genericSingle<Comment>('comment', id)
   }
 
-  comments (query: Query.Comments): Promise<Comment[]>
-  comments (post: Post): Promise<Post>
-  comments (query: Query.Comments | Post) {
+  comments(query: Query.Comments): Promise<Comment[]>
+  comments(post: Post): Promise<Post>
+  comments(query: Query.Comments | Post) {
     if (query.hasOwnProperty('id')) {
       // This is a Post, fill in the comments field
       const post = query as Post
@@ -50,13 +56,13 @@ class Danbooru2 extends Booru {
     }
   }
 
-  note (id: number) {
+  note(id: number) {
     return this.genericSingle<Note>('note', id)
   }
 
-  notes (query: Query.Notes): Promise<Note[]>
-  notes (post: Post): Promise<Post>
-  notes (query: Query.Notes | Post) {
+  notes(query: Query.Notes): Promise<Note[]>
+  notes(post: Post): Promise<Post>
+  notes(query: Query.Notes | Post) {
     if (query.hasOwnProperty('id')) {
       // This is a Post, fill in the comments field
       const post = query as Post
@@ -75,46 +81,48 @@ class Danbooru2 extends Booru {
     }
   }
 
-  pool (id: number) {
+  pool(id: number) {
     return this.genericSingle<Pool>('pool', id)
   }
 
-  pools (query: Query.Pools) {
+  pools(query: Query.Pools) {
     return this.genericQuery<Pool>('pool', query)
   }
 
-  user (id: number) {
+  user(id: number) {
     return this.genericSingle<User>('user', id)
   }
 
-  users (query: Query.Users) {
+  users(query: Query.Users) {
     return this.genericQuery<User>('user', query)
   }
 
-  wiki (id: number) {
+  wiki(id: number) {
     return this.genericSingle<Wiki>('wiki', id)
   }
 
-  wikis (query: Query.Wikis) {
+  wikis(query: Query.Wikis) {
     return this.genericQuery<Wiki>('wiki', query)
   }
 
-  private genericSingle<T> (type: string, id: number): Promise<T> {
-    return this.fetch((Danbooru2UriBuilder as any)[type](id)).then(data => (Danbooru2Converter as any)[type](data) as T)
+  private genericSingle<T>(type: string, id: number): Promise<T> {
+    return this.fetch((Danbooru2UriBuilder as any)[type](id)).then(
+      data => (Danbooru2Converter as any)[type](data) as T
+    )
   }
 
-  private genericQuery<T> (type: string, query: Query.Any): Promise<T[]> {
-    return this.fetch((Danbooru2UriBuilder as any)[`${type}s`](query))
-      .then((data: object[]) => data.map((Danbooru2Converter as any)[type]) as T[])
+  private genericQuery<T>(type: string, query: Query.Any): Promise<T[]> {
+    return this.fetch((Danbooru2UriBuilder as any)[`${type}s`](query)).then(
+      (data: object[]) => data.map((Danbooru2Converter as any)[type]) as T[]
+    )
   }
-
 }
 
 const Danbooru2UriBuilder: UriBuilder = {
-  post (id: number): string {
+  post(id: number): string {
     return `/posts/${id}.json`
   },
-  posts (query: Query.Posts): string {
+  posts(query: Query.Posts): string {
     let queryString = ''
     if (query.tags) {
       let t = query.tags
@@ -131,54 +139,66 @@ const Danbooru2UriBuilder: UriBuilder = {
     }
     return '/posts.json?' + queryString
   },
-  artist (id: number): string {
+  artist(id: number): string {
     return `/artists/${id}.json`
   },
-  artists (query: Query.Artists): string {
-    return '/artists.json?' + queryStringify({
-      name: query.nameMatches,
-      order: query.order
-    })
+  artists(query: Query.Artists): string {
+    return (
+      '/artists.json?' +
+      queryStringify({
+        name: query.nameMatches,
+        order: query.order
+      })
+    )
   },
-  comment (id: number): string {
+  comment(id: number): string {
     return `/comments/${id}.json`
   },
-  comments (query: Query.Comments): string {
-    return '/comments.json?' + queryStringify({
-      'group_by': 'comment',
-      ...query,
-      'search[body_matches]': query.contentMatches,
-      'search[creator_id]': query.creator ? query.creator.id : undefined,
-      'search[creator_name]': query.creator ? query.creator.name : undefined,
-      'search[post_id]': query.postId
-    })
+  comments(query: Query.Comments): string {
+    return (
+      '/comments.json?' +
+      queryStringify({
+        group_by: 'comment',
+        ...query,
+        'search[body_matches]': query.contentMatches,
+        'search[creator_id]': query.creator ? query.creator.id : undefined,
+        'search[creator_name]': query.creator ? query.creator.name : undefined,
+        'search[post_id]': query.postId
+      })
+    )
   },
-  note (id: number): string {
+  note(id: number): string {
     return `/notes/${id}.json`
   },
-  notes (query: Query.Notes): string {
-    return '/notes.json?' + queryStringify({
-      'search[body_matches]': query.contentMatches,
-      'search[creator_id]': query.creator ? query.creator.id : undefined,
-      'search[creator_name]': query.creator ? query.creator.name : undefined,
-      'search[post_id]': query.postId
-    })
+  notes(query: Query.Notes): string {
+    return (
+      '/notes.json?' +
+      queryStringify({
+        'search[body_matches]': query.contentMatches,
+        'search[creator_id]': query.creator ? query.creator.id : undefined,
+        'search[creator_name]': query.creator ? query.creator.name : undefined,
+        'search[post_id]': query.postId
+      })
+    )
   },
-  pool (id: number): string {
+  pool(id: number): string {
     return `/pools/${id}.json`
   },
-  pools (query: Query.Pools): string {
-    return '/pools.json?' + queryStringify({
-      'search[creator_id]': query.creator ? query.creator.id : undefined,
-      'search[creator_name]': query.creator ? query.creator.name : undefined,
-      'search[name_matches]': query.nameMatches,
-      'search[order]': query.order
-    })
+  pools(query: Query.Pools): string {
+    return (
+      '/pools.json?' +
+      queryStringify({
+        'search[creator_id]': query.creator ? query.creator.id : undefined,
+        'search[creator_name]': query.creator ? query.creator.name : undefined,
+        'search[name_matches]': query.nameMatches,
+        'search[order]': query.order
+      })
+    )
   },
-  user (id: number): string {
+  user(id: number): string {
     return `/users/${id}.json`
   },
-  users (query: Query.Users): string {
+  users(query: Query.Users): string {
     const transformed: any = {
       'search[name]': query.nameMatches,
       'search[order]': query.order
@@ -193,26 +213,31 @@ const Danbooru2UriBuilder: UriBuilder = {
     }
     return '/users.json?' + queryStringify(transformed)
   },
-  wiki (id: number): string {
+  wiki(id: number): string {
     return `/wiki_pages/${id}.json`
   },
-  wikis (query: Query.Wikis): string {
-    return '/wiki_pages.json?' + queryStringify({
-      'search[body_matches]': query.contentMatches,
-      'search[creator_id]': query.creator ? query.creator.id : undefined,
-      'search[creator_name]': query.creator ? query.creator.name : undefined,
-      'search[order]': query.order,
-      'search[title]': query.title
-    })
+  wikis(query: Query.Wikis): string {
+    return (
+      '/wiki_pages.json?' +
+      queryStringify({
+        'search[body_matches]': query.contentMatches,
+        'search[creator_id]': query.creator ? query.creator.id : undefined,
+        'search[creator_name]': query.creator ? query.creator.name : undefined,
+        'search[order]': query.order,
+        'search[title]': query.title
+      })
+    )
   }
 }
 
 const Danbooru2Converter: Converter = {
-  post (data: any): Post {
+  post(data: any): Post {
     const tagTypes = ['general', 'character', 'copyright', 'artist', 'meta']
     const post: Post = {
       active: !data.is_deleted,
-      children: data.has_children ? data.children_ids.split(' ').map(parseFloat) : [],
+      children: data.has_children
+        ? data.children_ids.split(' ').map(parseFloat)
+        : [],
       createdAt: data.created_at,
       creator: {
         id: data.uploader_id,
@@ -253,7 +278,7 @@ const Danbooru2Converter: Converter = {
     })
     return post
   },
-  user (data: any): User {
+  user(data: any): User {
     return {
       banned: data.is_banned,
       id: data.id,
@@ -261,7 +286,7 @@ const Danbooru2Converter: Converter = {
       name: data.name
     }
   },
-  comment (data: any): Comment {
+  comment(data: any): Comment {
     return {
       active: !data.is_deleted,
       content: data.body,
@@ -275,7 +300,7 @@ const Danbooru2Converter: Converter = {
       score: data.score
     }
   },
-  note (data: any): Note {
+  note(data: any): Note {
     return {
       active: data.is_active,
       content: data.body,
@@ -296,7 +321,7 @@ const Danbooru2Converter: Converter = {
       postId: data.post_id
     }
   },
-  artist (data: any): Artist {
+  artist(data: any): Artist {
     return {
       about: data.notes,
       active: data.is_active,
@@ -311,7 +336,7 @@ const Danbooru2Converter: Converter = {
       name: data.name
     }
   },
-  pool (data: any): Pool {
+  pool(data: any): Pool {
     return {
       active: data.is_active,
       category: data.category,
@@ -327,7 +352,7 @@ const Danbooru2Converter: Converter = {
       postIds: data.post_ids.split(' ').map(parseFloat)
     }
   },
-  wiki (data: any): Wiki {
+  wiki(data: any): Wiki {
     return {
       active: !data.is_deleted,
       aliases: data.other_names,

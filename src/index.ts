@@ -3,9 +3,9 @@ import Booru from './lib/booru'
 /** Contains results from a booru site with additional metadata */
 interface BooruResult<T> {
   /** Base URI of the booru site */
-  base: string,
+  base: string
   /** Array of results from the booru site or error (check status) */
-  data: T[] | any,
+  data: T[] | any
   /** Status of the result (when 'error', data is the error, else 'ok' and data is array of T) */
   status: string
 }
@@ -22,19 +22,19 @@ export default class ZenBridge {
   static builtInComparers: {
     [type: string]: (current: any, data: any[]) => boolean
   } = {
-    /** 
-     * Dedupes a collection of [[Post]]s based on md5. This is useful when (for example) displaying the images, 
+    /**
+     * Dedupes a collection of [[Post]]s based on md5. This is useful when (for example) displaying the images,
      * but you lose some information (like comments) that other boorus may have had for the same image.
      */
-    posts (current: Post, data: Post[]): boolean {
+    posts(current: Post, data: Post[]): boolean {
       return !data.some(d => d.md5 === current.md5)
     },
-    /** 
+    /**
      * Tries to dedupe a collection of [[Artist]]s based on name and at least one identical link.
-     * Note that differernt boorus could still have different info about the same artist, 
-     * which you would lose by deduping. Remember to use [[query]] to get data without deduping! 
+     * Note that differernt boorus could still have different info about the same artist,
+     * which you would lose by deduping. Remember to use [[query]] to get data without deduping!
      */
-    artists (current: Artist, data: Artist[]): boolean {
+    artists(current: Artist, data: Artist[]): boolean {
       let final = true
       data.forEach(d => {
         if (d.name === current.name) {
@@ -45,11 +45,11 @@ export default class ZenBridge {
       })
       return final
     },
-    /** 
-     * Tries to dedupe a collection of [[Comment]]s based on their content 
-     * (use with caution, this is potentially too aggressive for short-form comments). 
+    /**
+     * Tries to dedupe a collection of [[Comment]]s based on their content
+     * (use with caution, this is potentially too aggressive for short-form comments).
      */
-    comments (current: Comment, data: Comment[]): boolean {
+    comments(current: Comment, data: Comment[]): boolean {
       return !data.some(d => d.content === current.content)
     }
   }
@@ -67,21 +67,24 @@ export default class ZenBridge {
    * @param query Query object with search parameters
    * @returns Array of BooruResult objects (site base URI and results from that site)
    */
-  query<T> (type: string, query: Query.Any): Promise<Array<BooruResult<T>>> {
+  query<T>(type: string, query: Query.Any): Promise<Array<BooruResult<T>>> {
     const promises: Array<Promise<T[]>> = []
     this.services.forEach(async booru => {
       promises.push((booru as any)[type](query))
     })
-    return Promise.all(promises.map(p => 
-      p.then(r => ({data: r, status: 'ok' }), e => ({data: e, status: 'error' }))))
-      .then(arrays => 
-        arrays.map((data, i) => 
-          ({
-            base: this.services[i].base,
-            ...data
-          })
+    return Promise.all(
+      promises.map(p =>
+        p.then(
+          r => ({ data: r, status: 'ok' }),
+          e => ({ data: e, status: 'error' })
         )
       )
+    ).then(arrays =>
+      arrays.map((data, i) => ({
+        base: this.services[i].base,
+        ...data
+      }))
+    )
   }
 
   /**
@@ -90,16 +93,24 @@ export default class ZenBridge {
    * @param data Array of BooruResult objects to search through
    * @param comparer A function that tests every record in BooruResult data against records in the first dataset and returns true if the record is unique (eg. NOT a duplicate)
    */
-  dedupe<T> (data: Array<BooruResult<T>>, comparer: (current: T, data: T[]) => boolean): Array<BooruResult<T>> {
+  dedupe<T>(
+    data: Array<BooruResult<T>>,
+    comparer: (current: T, data: T[]) => boolean
+  ): Array<BooruResult<T>> {
     // End right away if results from only one site are passed
-    if (data.length === 1) { return data }
-    const filtered: Array<BooruResult<T>> = [ data[0] ]
+    if (data.length === 1) {
+      return data
+    }
+    const filtered: Array<BooruResult<T>> = [data[0]]
     data.slice(1).forEach(res => {
       filtered.push({
         base: res.base,
-        data: res.status === 'ok' ? res.data.filter((d: T) => 
-          comparer(d, Array.prototype.concat(filtered.map(f => f.data)))
-        ) : res.data,
+        data:
+          res.status === 'ok'
+            ? res.data.filter((d: T) =>
+                comparer(d, Array.prototype.concat(filtered.map(f => f.data)))
+              )
+            : res.data,
         status: res.status
       })
     })
@@ -113,7 +124,16 @@ export default class ZenBridge {
    * @param query Query object with search parameters
    * @param comparer Comparer function for [[dedupe]] (if not provided, built-in comparer is used based on the query type)
    */
-  aggregate<T> (type: string, query: Query.Any, comparer?: (record: T) => boolean): Promise<Array<BooruResult<T>>> {
-    return this.query<T>(type, query).then(res => this.dedupe<T>(res, comparer || ZenBridge.builtInComparers[type] || (() => true)))
+  aggregate<T>(
+    type: string,
+    query: Query.Any,
+    comparer?: (record: T) => boolean
+  ): Promise<Array<BooruResult<T>>> {
+    return this.query<T>(type, query).then(res =>
+      this.dedupe<T>(
+        res,
+        comparer || ZenBridge.builtInComparers[type] || (() => true)
+      )
+    )
   }
 }

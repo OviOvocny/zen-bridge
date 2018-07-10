@@ -25,7 +25,7 @@ declare namespace Query {
     /** Get randomly ordered results */
     random?: boolean
   }
-  
+
   /** A comments search query */
   interface Comments {
     /** Maximum number of comments to fetch */
@@ -39,7 +39,7 @@ declare namespace Query {
     /** User that posted the comment */
     creator?: User
   }
-  
+
   /** A notes search query */
   interface Notes {
     /** Pattern the content of the note has to match */
@@ -49,7 +49,7 @@ declare namespace Query {
     /** User that created the note */
     creator?: User
   }
-  
+
   /** An artists  search query */
   interface Artists {
     /** Pattern any of the artist's names have to match */
@@ -57,7 +57,7 @@ declare namespace Query {
     /** Order of results */
     order?: string
   }
-  
+
   /** A pools search query */
   interface Pools {
     /** Pattern the name of the pool has to match */
@@ -67,7 +67,7 @@ declare namespace Query {
     /** Order of results */
     order?: string
   }
-  
+
   /** A wiki pages search query */
   interface Wikis {
     /** Exact title of the wiki page to find */

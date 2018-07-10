@@ -3,10 +3,13 @@
  * @param rating Post rating received from booru
  * @param form Form of the rating
  */
-export default function convertRating(rating: string, form: string = 'char'): rating {
-  switch(form) {
+export default function convertRating(
+  rating: string,
+  form: string = 'char'
+): rating {
+  switch (form) {
     case 'char':
-      switch(rating) {
+      switch (rating) {
         case 's':
           return 'safe'
         case 'q':

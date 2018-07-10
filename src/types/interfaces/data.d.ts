@@ -83,9 +83,9 @@ interface Post extends Data {
   /** Array of IDs of the post's children */
   children: number[]
   /** Identifiers of the pools that include the post */
-  pools: string[],
+  pools: string[]
   /** Array of comments belonging to the post */
-  comments?: Comment[],
+  comments?: Comment[]
   /** Array of notes attached to the post */
   notes?: Note[]
 }
@@ -105,7 +105,7 @@ interface Comment extends Data {
 
 /**
  * A note object.
- * Notes are attached to a post in a specific position. 
+ * Notes are attached to a post in a specific position.
  * They are used to annotate a part of the image or to translate text in the image, for example speech bubbles in comics.
  */
 interface Note extends Data {
