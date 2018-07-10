@@ -11,7 +11,7 @@ export interface BooruResult<T> {
 }
 
 /** 
- * Describes a function that test elements of BooruResult.data for uniqueness
+ * Describes a function that test elements of BooruResult.data for uniqueness. See one of the [[builtInComparers]] for an example.
  * @typeparam T One of booru [[Data]] interface types
  * @param . current: The current element being tested
  * @param . data: The array to test against
