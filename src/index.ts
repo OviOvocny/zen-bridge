@@ -10,6 +10,15 @@ export interface BooruResult<T> {
   status: string
 }
 
+/** 
+ * Describes a function that test elements of BooruResult.data for uniqueness
+ * @typeparam T The specific type of [[Data]] being tested
+ * @param . current: The current element being tested
+ * @param . data: The array to test against
+ * @returns True if the element is unique
+ */
+type comparerCallback<T> = (current: T, data: T[]) => boolean
+
 /**
  * Allows interfacing with multiple Boorus simultaneously and provides methods for manipulating the results
  */
@@ -20,7 +29,7 @@ export default class ZenBridge {
    * You can of course provide your own comparer to [[dedupe]] if you want to dedupe those.
    */
   static readonly builtInComparers: {
-    [type: string]: (current: any, data: any[]) => boolean
+    [type: string]: comparerCallback<any>
   } = {
     /**
      * Dedupes a collection of [[Post]]s based on md5. This is useful when (for example) displaying the images,
@@ -108,7 +117,7 @@ export default class ZenBridge {
    */
   dedupe<T>(
     data: Array<BooruResult<T>>,
-    comparer: (current: T, data: T[]) => boolean
+    comparer: comparerCallback<T>
   ): Array<BooruResult<T>> {
     // End right away if results from only one site are passed
     if (data.length === 1) {
@@ -143,7 +152,7 @@ export default class ZenBridge {
   aggregate<T>(
     type: string,
     query: Query.Any,
-    comparer?: (record: T) => boolean
+    comparer?: comparerCallback<T>
   ): Promise<Array<BooruResult<T>>> {
     return this.query<T>(type, query).then(res =>
       this.dedupe<T>(
