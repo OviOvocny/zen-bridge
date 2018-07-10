@@ -12,7 +12,7 @@ export interface BooruResult<T> {
 
 /** 
  * Describes a function that test elements of BooruResult.data for uniqueness
- * @typeparam T The specific type of [[Data]] being tested
+ * @typeparam T One of booru [[Data]] interface types
  * @param . current: The current element being tested
  * @param . data: The array to test against
  * @returns True if the element is unique
@@ -65,6 +65,7 @@ export default class ZenBridge {
   /**
    * Merges results from many booru sites into one array,
    * throws additional info and errored results away
+   * @typeparam T One of booru [[Data]] interface types
    * @param data [[BooruResult]]s to merge
    */
   static merge<T>(
@@ -162,3 +163,6 @@ export default class ZenBridge {
     )
   }
 }
+
+
+export * from './lib/booru-types'

@@ -1,7 +1,7 @@
 // tslint:disable:no-expression-statement
 // tslint:disable:object-literal-sort-keys
 import { test } from 'ava'
-import Danbooru2 from './danbooru2'
+import { Danbooru2 } from './danbooru2'
 
 const b = new Danbooru2('https://danbooru.donmai.us')
 

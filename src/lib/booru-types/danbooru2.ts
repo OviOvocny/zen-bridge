@@ -368,4 +368,4 @@ const Danbooru2Converter: Converter = {
   }
 }
 
-export default Danbooru2
+export { Danbooru2 }
