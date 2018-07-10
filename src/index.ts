@@ -19,7 +19,7 @@ export default class ZenBridge {
    * Note that not all [[Data]] types are covered as for some deduping would not make sense.
    * You can of course provide your own comparer to [[dedupe]] if you want to dedupe those.
    */
-  static builtInComparers: {
+  static readonly builtInComparers: {
     [type: string]: (current: any, data: any[]) => boolean
   } = {
     /**
@@ -54,13 +54,27 @@ export default class ZenBridge {
   }
 
   /**
+   * Merges results from many booru sites into one array,
+   * throws additional info and errored results away
+   * @param data [[BooruResult]]s to merge
+   */
+  static merge<T>(
+    data: Array<BooruResult<T>>
+  ): T[] {
+    return data
+      .filter(d => d.status === 'ok')
+      .map(d => d.data)
+      .reduce((acc, d) => acc.concat(d), [])
+  }
+
+  /**
    * Create a ZenBridge with predefined set of Boorus to interface with
    * @param services Array of instances of Booru-compatibiles
    */
   constructor(public services: Booru[]) {}
 
   /**
-   * Query all provided [[Booru]]s simultaneously
+   * Queris all provided [[Booru]]s simultaneously
    * @typeparam T One of booru [[Data]] interface types
    * @param type Query type to execute as a string index
    * @param query Query object with search parameters
@@ -109,9 +123,7 @@ export default class ZenBridge {
             ? res.data.filter((d: T) =>
                 comparer(
                   d,
-                  filtered
-                    .map(f => f.data)
-                    .reduce((acc, val) => acc.concat(val), [])
+                  ZenBridge.merge(filtered)
                 )
               )
             : res.data,
