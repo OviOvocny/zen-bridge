@@ -13,9 +13,22 @@ interface Data {
 }
 
 /**
+ * A user credentials object. Both fields are required, but their use depends on the booru type.
+ */
+export interface Credentials {
+  /** Username, the identifier you use to log into the site. */
+  username: string
+  /** Password or API key.
+   * Some booru types salt and hash passwords, this should be done on the client side for security.
+   * Docs for specific booru type should explain its authentication process sufficiently.
+   */
+  key: string
+}
+
+/**
  * A booru user object.
  */
-interface User {
+export interface User {
   /** ID of the user */
   id: number
   /** True if user is banned */
@@ -30,7 +43,7 @@ interface User {
  * A post object.
  * Posts contain an image described by tags.
  */
-interface Post extends Data {
+export interface Post extends Data {
   /** Original source of the post image */
   source?: string
   /** MD5 hash of the post image */
@@ -94,7 +107,7 @@ interface Post extends Data {
  * A comment object.
  * Comments are created by users for discussing a post.
  */
-interface Comment extends Data {
+export interface Comment extends Data {
   /** ID of the post this comment belongs to */
   postId: number
   /** Comment score */
@@ -108,7 +121,7 @@ interface Comment extends Data {
  * Notes are attached to a post in a specific position.
  * They are used to annotate a part of the image or to translate text in the image, for example speech bubbles in comics.
  */
-interface Note extends Data {
+export interface Note extends Data {
   /** ID of the post this note belongs to */
   postId: number
   /** Position on top of the image */
@@ -128,7 +141,7 @@ interface Note extends Data {
 /**
  * An artist object.
  */
-interface Artist extends Data {
+export interface Artist extends Data {
   /** Primary name of the artist */
   name: string
   /** Other names the artist uses */
@@ -145,7 +158,7 @@ interface Artist extends Data {
  * A pool object.
  * Pools are collections of images with a common theme.
  */
-interface Pool extends Data {
+export interface Pool extends Data {
   /** Name of the pool */
   name: string
   /** Category the pool belongs to */
@@ -162,7 +175,7 @@ interface Pool extends Data {
  * A wiki page object.
  * Wiki pages describe tags or other features.
  */
-interface Wiki extends Data {
+export interface Wiki extends Data {
   /** Title of the page */
   title: string
   /** Body of the page */

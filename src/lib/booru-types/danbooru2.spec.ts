@@ -1,9 +1,40 @@
 // tslint:disable:no-expression-statement
 // tslint:disable:object-literal-sort-keys
 import { test } from 'ava'
+import { Credentials } from '../../types/interfaces/data'
 import { Danbooru2 } from './danbooru2'
 
 const b = new Danbooru2('https://danbooru.donmai.us')
+test('instantiates', t => t.true(b instanceof Danbooru2))
+
+test('gets a post while logged out', t => {
+  return b
+    .post(1)
+    .then(content => {
+      t.truthy(typeof content === 'object')
+    })
+    .catch(err => {
+      t.log(err)
+      t.fail()
+    })
+})
+
+test('rejects invalid credentials', t => {
+  t.plan(2)
+  t.false(b.loggedIn)
+  // tslint:disable-next-line:no-object-literal-type-assertion
+  t.throws(() => (b.credentials = {} as Credentials))
+})
+
+test('sets credentials', t => {
+  t.plan(2)
+  t.false(b.loggedIn)
+  b.credentials = {
+    username: process.env.DANBOORU_USERNAME!,
+    key: process.env.DANBOORU_KEY!
+  }
+  t.true(b.loggedIn)
+})
 
 test('gets a post', t => {
   return b

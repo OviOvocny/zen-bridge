@@ -1,4 +1,15 @@
-interface UriBuilder {
+import {
+  Artist,
+  Comment,
+  Note,
+  Pool,
+  Post,
+  User,
+  Wiki
+} from '../../types/interfaces/data'
+import * as Query from './queries'
+
+export interface UriBuilder {
   artist?(id: number): string
   artists?(query: Query.Artists): string
   comment?(id: number): string
@@ -15,7 +26,7 @@ interface UriBuilder {
   wikis?(query: Query.Wikis): string
 }
 
-interface Converter {
+export interface Converter {
   artist?(data: any): Artist
   comment?(data: any): Comment
   note?(data: any): Note

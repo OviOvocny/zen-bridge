@@ -1,4 +1,6 @@
 import Booru from './lib/booru'
+import { Artist, Comment, Post } from './types/interfaces/data'
+import * as Query from './types/interfaces/queries'
 
 /** Contains results from a booru site with additional metadata */
 export interface BooruResult<T> {

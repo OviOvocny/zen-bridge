@@ -1,4 +1,15 @@
 import { stringify as queryStringify } from 'query-string'
+import {
+  Artist,
+  Comment,
+  Note,
+  Pool,
+  Post,
+  User,
+  Wiki
+} from '../../types/interfaces/data'
+import { Converter, UriBuilder } from '../../types/interfaces/helpers'
+import * as Query from '../../types/interfaces/queries'
 import Booru from './../booru'
 import convertRating from './../utils/rating-converter'
 
@@ -106,13 +117,25 @@ class Danbooru2 extends Booru {
   }
 
   private genericSingle<T>(type: string, id: number): Promise<T> {
-    return this.fetch((Danbooru2UriBuilder as any)[type](id)).then(
+    let uri = (Danbooru2UriBuilder as any)[type](id)
+    if (this.loggedIn) {
+      uri += `?login=${this.pCredentials!.username}&api_key=${
+        this.pCredentials!.key
+      }`
+    }
+    return this.fetch(uri).then(
       data => (Danbooru2Converter as any)[type](data) as T
     )
   }
 
   private genericQuery<T>(type: string, query: Query.Any): Promise<T[]> {
-    return this.fetch((Danbooru2UriBuilder as any)[`${type}s`](query)).then(
+    let uri = (Danbooru2UriBuilder as any)[`${type}s`](query)
+    if (this.loggedIn) {
+      uri += `&login=${this.pCredentials!.username}&api_key=${
+        this.pCredentials!.key
+      }`
+    }
+    return this.fetch(uri).then(
       (data: object[]) => data.map((Danbooru2Converter as any)[type]) as T[]
     )
   }

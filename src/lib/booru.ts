@@ -1,19 +1,56 @@
+import {
+  Artist,
+  Comment,
+  Credentials,
+  Note,
+  Pool,
+  Post,
+  User,
+  Wiki
+} from '../types/interfaces/data'
+import * as Query from '../types/interfaces/queries'
 import dataFetcher from './utils/data-fetcher'
-
 /**
  * An instance of a specific booru site.
  * Has common methods for getting data from a booru.
  * Can be used on its own or as a ZenBridge service.
  */
 export default abstract class Booru {
-  /** True if this booru has a XML-based API */
+  /** True if this booru has a XML-based API. */
   abstract readonly xml: boolean
+  /** Stores any global options for the booru. This has different members based on the booru type. */
+  options?: Map<string, any>
+  /** Stores credentials for authentication. From outside the class, use [[credentials]] accessor or set it in the constructor directly. */
+  protected pCredentials?: Credentials
 
   /**
    * Create instance of a specific booru site
    * @param base Base URI of a booru site
+   * @param credentials Credentials for authentication on the site
    */
-  constructor(public base: string) {}
+  constructor(public base: string, credentials?: Credentials) {
+    this.pCredentials = credentials
+  }
+
+  /**
+   * Set credentials object to use for authentication on the site. See [[Credentials]] for more about required fields.
+   */
+  set credentials(data: Credentials | undefined) {
+    if (data && (!data.username || !data.key)) {
+      throw new TypeError(
+        'Invalid credentials object. See /interfaces/credentials in the docs.'
+      )
+    } else {
+      this.pCredentials = data
+    }
+  }
+
+  /**
+   * Check if the auth credentials are set
+   */
+  get loggedIn(): boolean {
+    return this.pCredentials !== undefined
+  }
 
   /**
    * Get a single Post by ID
@@ -28,88 +65,102 @@ export default abstract class Booru {
   abstract posts(query: Query.Posts): Promise<Post[]>
 
   /**
+   * Add a post to favorites or remove it
+   * @precondition Credentials are set (required authentication, see [[credentials]])
+   * @param id ID of the target post
+   * @param remove If not set, post will be added or removed based on the current state on the site. If set and true, post will be removed from favories, else it will be added. If set and post is already in the desired state, nothing happens.
+   */
+  favorite?(id: number, remove?: boolean): Promise<boolean>
+
+  /**
+   * List user's favorites
+   * @param user User whose favorites to list. If not set, lists logged in user's favorites or rejects if no credentials are set.
+   */
+  favorites?(user?: User): Promise<Post[]>
+
+  /**
    * Get a single Artist by ID
    * @param id ID of the artist
    */
-  abstract artist?(id: number): Promise<Artist>
+  artist?(id: number): Promise<Artist>
 
   /**
    * Get an array of Artists that match a query
    * @param query Artists search query object
    */
-  abstract artists?(query: Query.Artists): Promise<Artist[]>
+  artists?(query: Query.Artists): Promise<Artist[]>
 
   /**
    * Get a single Comment by ID
    * @param id ID of the comment
    */
-  abstract comment?(id: number): Promise<Comment>
+  comment?(id: number): Promise<Comment>
 
   /**
    * Get an array of Comments that match a query
    * @param query Comments search query object
    */
-  abstract comments?(query: Query.Comments): Promise<Comment[]>
+  comments?(query: Query.Comments): Promise<Comment[]>
 
   /**
    * Get back the Post you passed in with the comments field populated
    * @param post The post to find comments for
    */
-  abstract comments?(post: Post): Promise<Post>
+  comments?(post: Post): Promise<Post>
 
   /**
    * Get a single Note by ID
    * @param id ID of the note
    */
-  abstract note?(id: number): Promise<Note>
+  note?(id: number): Promise<Note>
 
   /**
    * Get an array of Notes that match a query
    * @param query Notes search query object
    */
-  abstract notes?(query: Query.Notes): Promise<Note[]>
+  notes?(query: Query.Notes): Promise<Note[]>
 
   /**
    * Get back the Post you passed in with the notes field populated
    * @param post The post to find notes for
    */
-  abstract notes?(post: Post): Promise<Post>
+  notes?(post: Post): Promise<Post>
 
   /**
    * Get a single Pool by ID
    * @param id ID of the pool
    */
-  abstract pool?(id: number): Promise<Pool>
+  pool?(id: number): Promise<Pool>
 
   /**
    * Get an array of Pools that match a query
    * @param query Pools search query object
    */
-  abstract pools?(query: Query.Pools): Promise<Pool[]>
+  pools?(query: Query.Pools): Promise<Pool[]>
 
   /**
    * Get a single User by ID
    * @param id ID of the user
    */
-  abstract user?(id: number): Promise<User>
+  user?(id: number): Promise<User>
 
   /**
    * Get an array of Users that match a query
    * @param query Users search query object
    */
-  abstract users?(query: Query.Users): Promise<User[]>
+  users?(query: Query.Users): Promise<User[]>
 
   /**
    * Get a single Wiki page by ID
    * @param id ID of the wiki page
    */
-  abstract wiki?(id: number): Promise<Wiki>
+  wiki?(id: number): Promise<Wiki>
 
   /**
    * Get an array of Wikis that match a query
    * @param query Wikis search query object
    */
-  abstract wikis?(query: Query.Wikis): Promise<Wiki[]>
+  wikis?(query: Query.Wikis): Promise<Wiki[]>
 
   /**
    * GET an API call result as an object
