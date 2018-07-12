@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { stringify as queryStringify } from 'query-string'
 import {
   Artist,
@@ -32,6 +33,43 @@ class Danbooru2 extends Booru {
             )
           : posts
     )
+  }
+
+  favorite(id: number) {
+    if (!this.loggedIn) {
+      return Promise.reject(
+        new Error('Credentials not set or invalid for this booru instance')
+      )
+    }
+    const uri = this.base + Danbooru2UriBuilder.favorite!(id)
+    return axios.post(uri, {}, this.auth).then(
+      res => res.data.success,
+      err => {
+        throw new Error('API call was rejected: ' + err)
+      }
+    )
+  }
+
+  unfavorite(id: number) {
+    if (!this.loggedIn) {
+      return Promise.reject(
+        new Error('Credentials not set or invalid for this booru instance')
+      )
+    }
+    const uri = this.base + Danbooru2UriBuilder.unfavorite!(id)
+    return axios
+      .delete(uri, this.auth)
+      .then(res => res.data)
+      .then(d => {
+        /* istanbul ignore else */
+        if (d.includes(`<meta name="post-id" content="${id}">`)) {
+          return true
+        } else {
+          throw new Error(
+            'API call was rejected, reason: who knows, Danbooru just sends a login page...'
+          )
+        }
+      })
   }
 
   artist(id: number) {
@@ -117,27 +155,28 @@ class Danbooru2 extends Booru {
   }
 
   private genericSingle<T>(type: string, id: number): Promise<T> {
-    let uri = (Danbooru2UriBuilder as any)[type](id)
-    if (this.loggedIn) {
-      uri += `?login=${this.pCredentials!.username}&api_key=${
-        this.pCredentials!.key
-      }`
-    }
-    return this.fetch(uri).then(
+    const uri = (Danbooru2UriBuilder as any)[type](id)
+    return this.fetch(uri, this.auth).then(
       data => (Danbooru2Converter as any)[type](data) as T
     )
   }
 
   private genericQuery<T>(type: string, query: Query.Any): Promise<T[]> {
-    let uri = (Danbooru2UriBuilder as any)[`${type}s`](query)
-    if (this.loggedIn) {
-      uri += `&login=${this.pCredentials!.username}&api_key=${
-        this.pCredentials!.key
-      }`
-    }
-    return this.fetch(uri).then(
+    const uri = (Danbooru2UriBuilder as any)[`${type}s`](query)
+    return this.fetch(uri, this.auth).then(
       (data: object[]) => data.map((Danbooru2Converter as any)[type]) as T[]
     )
+  }
+
+  private get auth(): object {
+    return this.loggedIn
+      ? {
+          auth: {
+            password: this.pCredentials!.key,
+            username: this.pCredentials!.username
+          }
+        }
+      : {}
   }
 }
 
@@ -161,6 +200,12 @@ const Danbooru2UriBuilder: UriBuilder = {
       queryString = queryStringify(query)
     }
     return '/posts.json?' + queryString
+  },
+  favorite(id: number): string {
+    return `/favorites.json?post_id=${id}`
+  },
+  unfavorite(id: number): string {
+    return `/favorites/${id}`
   },
   artist(id: number): string {
     return `/artists/${id}.json`

@@ -49,7 +49,11 @@ export default abstract class Booru {
    * Check if the auth credentials are set
    */
   get loggedIn(): boolean {
-    return this.pCredentials !== undefined
+    return (
+      this.pCredentials !== undefined &&
+      this.pCredentials.username !== undefined &&
+      this.pCredentials.key !== undefined
+    )
   }
 
   /**
@@ -65,18 +69,18 @@ export default abstract class Booru {
   abstract posts(query: Query.Posts): Promise<Post[]>
 
   /**
-   * Add a post to favorites or remove it
-   * @precondition Credentials are set (required authentication, see [[credentials]])
+   * Add a post to favorites
+   * @precondition Credentials are set (for authentication, see [[credentials]])
    * @param id ID of the target post
-   * @param remove If not set, post will be added or removed based on the current state on the site. If set and true, post will be removed from favories, else it will be added. If set and post is already in the desired state, nothing happens.
    */
-  favorite?(id: number, remove?: boolean): Promise<boolean>
+  favorite?(id: number): Promise<boolean>
 
   /**
-   * List user's favorites
-   * @param user User whose favorites to list. If not set, lists logged in user's favorites or rejects if no credentials are set.
+   * Remove a post from favorites
+   * @precondition Credentials are set (for authentication, see [[credentials]])
+   * @param id ID of the target post
    */
-  favorites?(user?: User): Promise<Post[]>
+  unfavorite?(id: number): Promise<boolean>
 
   /**
    * Get a single Artist by ID
@@ -166,7 +170,7 @@ export default abstract class Booru {
    * GET an API call result as an object
    * @param path Part of the URI appended to the base
    */
-  protected fetch(path: string): Promise<any> {
-    return dataFetcher(this.base, path, this.xml)
+  protected fetch(path: string, config?: object): Promise<any> {
+    return dataFetcher(this.base, path, this.xml, config)
   }
 }

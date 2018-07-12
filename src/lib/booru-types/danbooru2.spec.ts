@@ -4,36 +4,91 @@ import { test } from 'ava'
 import { Credentials } from '../../types/interfaces/data'
 import { Danbooru2 } from './danbooru2'
 
+function login() {
+  b.credentials = {
+    username: process.env.DANBOORU_USERNAME!,
+    key: process.env.DANBOORU_KEY!
+  }
+}
+
 const b = new Danbooru2('https://danbooru.donmai.us')
 test('instantiates', t => t.true(b instanceof Danbooru2))
 
-test('gets a post while logged out', t => {
-  return b
-    .post(1)
-    .then(content => {
-      t.truthy(typeof content === 'object')
-    })
-    .catch(err => {
-      t.log(err)
-      t.fail()
-    })
-})
-
 test('rejects invalid credentials', t => {
+  b.credentials = undefined
   t.plan(2)
   t.false(b.loggedIn)
   // tslint:disable-next-line:no-object-literal-type-assertion
   t.throws(() => (b.credentials = {} as Credentials))
 })
 
-test('sets credentials', t => {
+test.serial('sets credentials', t => {
   t.plan(2)
-  t.false(b.loggedIn)
-  b.credentials = {
-    username: process.env.DANBOORU_USERNAME!,
-    key: process.env.DANBOORU_KEY!
-  }
+  login()
   t.true(b.loggedIn)
+  b.credentials = undefined
+  t.false(b.loggedIn)
+})
+
+test('fails to add favorite logged out', t => {
+  b.credentials = undefined
+  return b
+    .favorite(1)
+    .then(() => t.fail('Then called'))
+    .catch(err => t.pass(err))
+})
+
+test('fails to remove favorite logged out', t => {
+  b.credentials = undefined
+  return b
+    .unfavorite(1)
+    .then(() => t.fail('Then called'))
+    .catch(err => t.pass(err))
+})
+
+test.serial('fails to add favorite bad login', t => {
+  t.plan(2)
+  b.credentials = {
+    username: 'nope',
+    key: 'nope'
+  }
+  return b
+    .favorite(1)
+    .then(() => {
+      b.credentials = undefined
+      t.fail('Then called')
+    })
+    .catch(err => t.true(err instanceof Error))
+    .then(() => {
+      b.credentials = undefined
+      t.false(b.loggedIn)
+    })
+})
+
+test.serial('adds favorite', t => {
+  t.plan(3)
+  login()
+  t.true(b.loggedIn)
+  return b
+    .favorite(1)
+    .then(t.true)
+    .then(() => {
+      b.credentials = undefined
+      t.false(b.loggedIn)
+    })
+})
+
+test.serial('removes favorite', t => {
+  t.plan(3)
+  login()
+  t.true(b.loggedIn)
+  return b
+    .unfavorite(1)
+    .then(t.true)
+    .then(() => {
+      b.credentials = undefined
+      t.false(b.loggedIn)
+    })
 })
 
 test('gets a post', t => {
