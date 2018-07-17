@@ -1,12 +1,4 @@
-import {
-  Artist,
-  Comment,
-  Note,
-  Pool,
-  Post,
-  User,
-  Wiki
-} from '../interfaces/data'
+import { User } from './data'
 
 /**
  * Contains interfaces used to query an API endpoint via a Booru method
