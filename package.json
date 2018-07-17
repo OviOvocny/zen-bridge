@@ -1,6 +1,6 @@
 {
   "name": "zen-bridge",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A module for interacting with multiple image boards (booru) at once",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
