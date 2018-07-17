@@ -8,9 +8,9 @@ import {
   Post,
   User,
   Wiki
-} from '../../types/interfaces/data'
-import { Converter, UriBuilder } from '../../types/interfaces/helpers'
-import * as Query from '../../types/interfaces/queries'
+} from '../types/interfaces/data'
+import { Converter, UriBuilder } from '../types/interfaces/helpers'
+import * as Query from '../types/interfaces/queries'
 import Booru from './../booru'
 import convertRating from './../utils/rating-converter'
 

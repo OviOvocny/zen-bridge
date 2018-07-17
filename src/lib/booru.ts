@@ -7,8 +7,8 @@ import {
   Post,
   User,
   Wiki
-} from '../types/interfaces/data'
-import * as Query from '../types/interfaces/queries'
+} from './types/interfaces/data'
+import * as Query from './types/interfaces/queries'
 import dataFetcher from './utils/data-fetcher'
 /**
  * An instance of a specific booru site.

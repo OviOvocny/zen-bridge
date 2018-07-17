@@ -1,7 +1,7 @@
 // tslint:disable:no-expression-statement
 // tslint:disable:object-literal-sort-keys
 import { test } from 'ava'
-import { Credentials } from '../../types/interfaces/data'
+import { Credentials } from '../types/interfaces/data'
 import { Danbooru2 } from './danbooru2'
 
 function login() {

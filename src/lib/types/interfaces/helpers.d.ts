@@ -6,7 +6,7 @@ import {
   Post,
   User,
   Wiki
-} from '../../types/interfaces/data'
+} from '../interfaces/data'
 import * as Query from './queries'
 
 export interface UriBuilder {

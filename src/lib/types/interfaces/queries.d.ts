@@ -6,7 +6,7 @@ import {
   Post,
   User,
   Wiki
-} from '../../types/interfaces/data'
+} from '../interfaces/data'
 
 /**
  * Contains interfaces used to query an API endpoint via a Booru method
