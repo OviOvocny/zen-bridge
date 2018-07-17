@@ -169,6 +169,7 @@ export default abstract class Booru {
   /**
    * GET an API call result as an object
    * @param path Part of the URI appended to the base
+   * @param config Axios config object
    */
   protected fetch(path: string, config?: object): Promise<any> {
     return dataFetcher(this.base, path, this.xml, config)
