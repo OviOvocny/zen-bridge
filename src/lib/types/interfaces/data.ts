@@ -18,7 +18,7 @@ interface Data {
 export interface Credentials {
   /** Username, the identifier you use to log into the site. */
   username: string
-  /** 
+  /**
    * Password or API key.
    * Some booru types salt and hash passwords, this should be done on the client side for security.
    * Docs for specific booru type should explain its authentication process sufficiently.

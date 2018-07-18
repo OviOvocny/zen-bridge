@@ -1,7 +1,7 @@
 // tslint:disable:no-expression-statement
 // tslint:disable:object-literal-sort-keys
 import { test } from 'ava'
-import ZenBridge, { BooruResult, Danbooru2 } from './index'
+import ZenBridge, { BooruResult, Danbooru2 } from '.'
 import { Artist, Comment, Note, Post } from './lib/types/interfaces/data'
 
 const db = new Danbooru2('https://danbooru.donmai.us')

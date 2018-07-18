@@ -1,12 +1,4 @@
-import {
-  Artist,
-  Comment,
-  Note,
-  Pool,
-  Post,
-  User,
-  Wiki
-} from './data'
+import { Artist, Comment, Note, Pool, Post, User, Wiki } from './data'
 import * as Query from './queries'
 
 export interface UriBuilder {

@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { stringify as queryStringify } from 'query-string'
+import Booru from '../booru'
 import {
   Artist,
   Comment,
@@ -11,8 +12,7 @@ import {
 } from '../types/interfaces/data'
 import { Converter, UriBuilder } from '../types/interfaces/helpers'
 import * as Query from '../types/interfaces/queries'
-import Booru from './../booru'
-import convertRating from './../utils/rating-converter'
+import convertRating from '../utils/rating-converter'
 
 /**
  * A Booru implementation for sites running Danbooru version 2
