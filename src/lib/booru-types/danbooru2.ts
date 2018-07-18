@@ -19,13 +19,11 @@ import convertRating from '../utils/rating-converter'
  */
 class Danbooru2 extends Booru {
   readonly xml = false
-
-  post(id: number) {
-    return this.genericSingle<Post>('post', id)
-  }
+  protected uriBuilder = Danbooru2UriBuilder
+  protected converter = Danbooru2Converter
 
   posts(query: Query.Posts) {
-    return this.genericQuery<Post>('post', query).then(
+    return this.genericQuery('post', query).then(
       (posts: Post[]) =>
         query.exclude
           ? posts.filter(
@@ -42,7 +40,7 @@ class Danbooru2 extends Booru {
       )
     }
     const uri = this.base + Danbooru2UriBuilder.favorite!(id)
-    return axios.post(uri, {}, this.auth).then(
+    return axios.post(uri, {}, this.fetchOptions).then(
       res => res.data.success,
       err => {
         throw new Error('API call was rejected: ' + err)
@@ -58,7 +56,7 @@ class Danbooru2 extends Booru {
     }
     const uri = this.base + Danbooru2UriBuilder.unfavorite!(id)
     return axios
-      .delete(uri, this.auth)
+      .delete(uri, this.fetchOptions)
       .then(res => res.data)
       .then(d => {
         /* istanbul ignore else */
@@ -72,103 +70,7 @@ class Danbooru2 extends Booru {
       })
   }
 
-  artist(id: number) {
-    return this.genericSingle<Artist>('artist', id)
-  }
-
-  artists(query: Query.Artists) {
-    return this.genericQuery<Artist>('artist', query)
-  }
-
-  comment(id: number) {
-    return this.genericSingle<Comment>('comment', id)
-  }
-
-  comments(query: Query.Comments): Promise<Comment[]>
-  comments(post: Post): Promise<Post>
-  comments(query: Query.Comments | Post) {
-    if (query.hasOwnProperty('id')) {
-      // This is a Post, fill in the comments field
-      const post = query as Post
-      return this.genericQuery<Comment>('comment', {
-        postId: post.id
-      }).then(comments => {
-        const populated: Post = {
-          ...post,
-          comments
-        }
-        return populated
-      })
-    } else {
-      // This is a query, get comments array
-      return this.genericQuery<Comment>('comment', query)
-    }
-  }
-
-  note(id: number) {
-    return this.genericSingle<Note>('note', id)
-  }
-
-  notes(query: Query.Notes): Promise<Note[]>
-  notes(post: Post): Promise<Post>
-  notes(query: Query.Notes | Post) {
-    if (query.hasOwnProperty('id')) {
-      // This is a Post, fill in the comments field
-      const post = query as Post
-      return this.genericQuery<Note>('note', {
-        postId: post.id
-      }).then(notes => {
-        const populated: Post = {
-          ...post,
-          notes
-        }
-        return populated
-      })
-    } else {
-      // This is a query, get comments array
-      return this.genericQuery<Note>('note', query)
-    }
-  }
-
-  pool(id: number) {
-    return this.genericSingle<Pool>('pool', id)
-  }
-
-  pools(query: Query.Pools) {
-    return this.genericQuery<Pool>('pool', query)
-  }
-
-  user(id: number) {
-    return this.genericSingle<User>('user', id)
-  }
-
-  users(query: Query.Users) {
-    return this.genericQuery<User>('user', query)
-  }
-
-  wiki(id: number) {
-    return this.genericSingle<Wiki>('wiki', id)
-  }
-
-  wikis(query: Query.Wikis) {
-    return this.genericQuery<Wiki>('wiki', query)
-  }
-
-  private genericSingle<T>(type: string, id: number): Promise<T> {
-    const uri = (Danbooru2UriBuilder as any)[type](id)
-    return this.fetch(uri, this.auth).then(
-      data => (Danbooru2Converter as any)[type](data) as T
-    )
-  }
-
-  private genericQuery<T>(type: string, query: Query.Any): Promise<T[]> {
-    const uri = (Danbooru2UriBuilder as any)[`${type}s`](query)
-    return this.fetch(uri, this.auth).then(
-      (data: object[]) => data.map((Danbooru2Converter as any)[type]) as T[]
-    )
-  }
-
-  private get auth(): object {
+  protected get fetchOptions(): object {
     return this.loggedIn
       ? {
           auth: {

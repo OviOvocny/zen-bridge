@@ -57,6 +57,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
+    "jshashes": "^1.0.7",
     "query-string": "^6.1.0",
     "xml2js": "^0.4.19"
   },

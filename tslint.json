@@ -31,7 +31,6 @@
     // "no-if-statement": true
     /* end tslint-immutable rules */
 
-    "no-namespace": false,
     "member-access": [true, "no-public"]
   }
 }
