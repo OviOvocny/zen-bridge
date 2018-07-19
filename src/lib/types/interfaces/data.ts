@@ -95,9 +95,9 @@ export interface Post extends Data {
   /** ID of the parent post */
   parent?: number
   /** Array of IDs of the post's children */
-  children: number[]
+  children?: number[]
   /** Identifiers of the pools that include the post */
-  pools: string[]
+  pools?: string[]
   /** Array of comments belonging to the post */
   comments?: Comment[]
   /** Array of notes attached to the post */
@@ -112,7 +112,7 @@ export interface Comment extends Data {
   /** ID of the post this comment belongs to */
   postId: number
   /** Comment score */
-  score: number
+  score?: number
   /** Body of the comment */
   content: string
 }
@@ -148,7 +148,7 @@ export interface Artist extends Data {
   /** Other names the artist uses */
   aliases: string[]
   /** Group the artists is part of */
-  group?: string
+  group?: string | number
   /** Links to the artist's social media, portfolios and other websites */
   links: string[]
   /** Artist description */
@@ -168,6 +168,8 @@ export interface Pool extends Data {
   postCount: number
   /** IDs of all posts in the pool */
   postIds?: number[]
+  /** All posts in the pool */
+  posts?: Post[]
   /** Description of the pool */
   description?: string
 }
@@ -182,5 +184,5 @@ export interface Wiki extends Data {
   /** Body of the page */
   content: string
   /** Other names for the entry */
-  aliases: string[]
+  aliases?: string[]
 }

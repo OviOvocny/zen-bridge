@@ -8,6 +8,7 @@ export interface UriBuilder {
   comments?(query: Query.Comments): string
   favorite?(id: number): string
   unfavorite?(id: number): string
+  vote?(id: number, score: number): string
   note?(id: number): string
   notes?(query: Query.Notes): string
   pool?(id: number): string

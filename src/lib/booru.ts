@@ -65,7 +65,7 @@ export default abstract class Booru {
    * Get a single Post by ID
    * @param id ID of the post
    */
-  post(id: number): Promise<Post> {
+  post(id: number | string): Promise<Post> {
     return this.genericSingle('post', id)
   }
 
@@ -82,20 +82,20 @@ export default abstract class Booru {
    * @precondition Credentials are set (for authentication, see [[credentials]])
    * @param id ID of the target post
    */
-  abstract favorite(id: number): Promise<boolean>
+  abstract favorite(id: number | string): Promise<boolean>
 
   /**
    * Remove a post from favorites
    * @precondition Credentials are set (for authentication, see [[credentials]])
    * @param id ID of the target post
    */
-  abstract unfavorite(id: number): Promise<boolean>
+  abstract unfavorite(id: number | string): Promise<boolean>
 
   /**
    * Get a single Artist by ID
    * @param id ID of the artist
    */
-  artist(id: number): Promise<Artist> {
+  artist(id: number | string): Promise<Artist> {
     return this.genericSingle('artist', id)
   }
 
@@ -111,7 +111,7 @@ export default abstract class Booru {
    * Get a single Comment by ID
    * @param id ID of the comment
    */
-  comment(id: number): Promise<Comment> {
+  comment(id: number | string): Promise<Comment> {
     return this.genericSingle('comment', id)
   }
 
@@ -150,7 +150,7 @@ export default abstract class Booru {
    * Get a single Note by ID
    * @param id ID of the note
    */
-  note(id: number): Promise<Note> {
+  note(id: number | string): Promise<Note> {
     return this.genericSingle('note', id)
   }
 
@@ -168,7 +168,7 @@ export default abstract class Booru {
 
   notes(query: Query.Notes | Post) {
     if (query.hasOwnProperty('id')) {
-      // This is a Post, fill in the comments field
+      // This is a Post, fill in the notes field
       const post = query as Post
       return this.genericQuery('note', {
         postId: post.id
@@ -180,7 +180,7 @@ export default abstract class Booru {
         return populated
       })
     } else {
-      // This is a query, get comments array
+      // This is a query, get notes array
       return this.genericQuery('note', query)
     }
   }
@@ -189,7 +189,7 @@ export default abstract class Booru {
    * Get a single Pool by ID
    * @param id ID of the pool
    */
-  pool(id: number): Promise<Pool> {
+  pool(id: number | string): Promise<Pool> {
     return this.genericSingle('pool', id)
   }
 
@@ -205,7 +205,7 @@ export default abstract class Booru {
    * Get a single User by ID
    * @param id ID of the user
    */
-  user(id: number): Promise<User> {
+  user(id: number | string): Promise<User> {
     return this.genericSingle('user', id)
   }
 
@@ -221,7 +221,7 @@ export default abstract class Booru {
    * Get a single Wiki page by ID
    * @param id ID of the wiki page
    */
-  wiki(id: number): Promise<Wiki> {
+  wiki(id: number | string): Promise<Wiki> {
     return this.genericSingle('wiki', id)
   }
 
@@ -242,7 +242,7 @@ export default abstract class Booru {
     return dataFetcher(this.base, path, this.xml, config)
   }
 
-  protected genericSingle(type: string, id: number): Promise<any> {
+  protected genericSingle(type: string, id: number | string): Promise<any> {
     const uri = (this.uriBuilder as any)[type](id)
     return this.fetch(uri, this.fetchOptions).then(data =>
       (this.converter as any)[type](data)
