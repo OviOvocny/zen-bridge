@@ -1,16 +1,16 @@
 // tslint:disable:no-expression-statement
 // tslint:disable:object-literal-sort-keys
 import { test } from 'ava'
-import ZenBridge, { BooruResult, Danbooru2 } from '.'
+import ZenBridge, { BooruResult, Danbooru2, Moebooru } from '.'
 import { Artist, Comment, Note, Post } from './lib/types/interfaces/data'
 
 const db = new Danbooru2('https://danbooru.donmai.us')
-const sb = new Danbooru2('https://safebooru.donmai.us')
+const kc = new Moebooru('http://konachan.net')
 
-const zb = new ZenBridge([db, sb])
+const bridge = new ZenBridge([db, kc])
 
 test.serial('queries multiple Boorus for content', t => {
-  return zb
+  return bridge
     .query<Note>('notes', {
       postId: 7
     })
@@ -20,17 +20,17 @@ test.serial('queries multiple Boorus for content', t => {
 })
 
 test.serial('error status in result when its promise rejects', t => {
-  return zb
+  return bridge
     .query<Post>('posts', {
-      page: 9999 // Over 1000 limit
+      page: 9999 // Over 1000 limit on Danbooru2
     })
     .then(fails => {
-      t.false(fails.some(f => f.status === 'ok'))
+      t.true(fails.some(f => f.status !== 'ok'))
     })
 })
 
 test.serial('aggregates posts from multiple Boorus', t => {
-  return zb
+  return bridge
     .aggregate<Post>('posts', {
       tags: ['cat_girl', 'hairband']
     })
@@ -40,7 +40,7 @@ test.serial('aggregates posts from multiple Boorus', t => {
 })
 
 test.serial('aggregates artists from multiple Boorus', t => {
-  return zb
+  return bridge
     .aggregate<Artist>('artists', {
       nameMatches: 'momiji'
     })
@@ -50,7 +50,7 @@ test.serial('aggregates artists from multiple Boorus', t => {
 })
 
 test.serial('aggregates comments from multiple Boorus', t => {
-  return zb
+  return bridge
     .aggregate<Comment>('comments', {
       postId: 1
     })
@@ -60,7 +60,7 @@ test.serial('aggregates comments from multiple Boorus', t => {
 })
 
 test.serial('aggregate comparer defaults to always true', t => {
-  return zb
+  return bridge
     .aggregate<Note>('notes', {
       postId: 1
     })
@@ -91,7 +91,7 @@ test.serial('dedupes', t => {
     }
   ]
   t.is(
-    zb.dedupe<Post>(testData, ZenBridge.builtInComparers.posts)[1].data.length,
+    bridge.dedupe<Post>(testData, ZenBridge.builtInComparers.posts)[1].data.length,
     0
   )
 })
@@ -112,7 +112,7 @@ test.serial('skips dedupe for array of single result', t => {
     const trash = { current, data }
     return typeof trash === 'object'
   }
-  t.is(zb.dedupe<Comment>(testData, lazyComparer), testData)
+  t.is(bridge.dedupe<Comment>(testData, lazyComparer), testData)
 })
 
 test.serial('skips dedupe for errored results', t => {
@@ -140,5 +140,5 @@ test.serial('skips dedupe for errored results', t => {
     const trash = { current, data }
     return typeof trash === 'object'
   }
-  t.is(zb.dedupe<Comment>(testData, lazyComparer)[1].data[0].err, 'oh no')
+  t.is(bridge.dedupe<Comment>(testData, lazyComparer)[1].data[0].err, 'oh no')
 })
