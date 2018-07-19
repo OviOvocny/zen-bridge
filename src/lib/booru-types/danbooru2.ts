@@ -33,13 +33,24 @@ class Danbooru2 extends Booru {
     )
   }
 
+  pool(id: number): Promise<Pool> {
+    const pool: Promise<Pool> = this.genericSingle('pool', id)
+    const posts: Promise<Post[]> = this.genericQuery('post', {
+      tags: [`pool:${id}`]
+    })
+    return Promise.all([pool, posts]).then(res => {
+      res[0].posts = res[1]
+      return res[0]
+    })
+  }
+
   favorite(id: number) {
     if (!this.loggedIn) {
       return Promise.reject(
         new Error('Credentials not set or invalid for this booru instance')
       )
     }
-    const uri = this.base + Danbooru2UriBuilder.favorite!(id)
+    const uri = this.base + this.uriBuilder.favorite!(id)
     return axios.post(uri, {}, this.fetchOptions).then(
       res => res.data.success,
       err => {
@@ -54,7 +65,7 @@ class Danbooru2 extends Booru {
         new Error('Credentials not set or invalid for this booru instance')
       )
     }
-    const uri = this.base + Danbooru2UriBuilder.unfavorite!(id)
+    const uri = this.base + this.uriBuilder.unfavorite!(id)
     return axios
       .delete(uri, this.fetchOptions)
       .then(res => res.data)
