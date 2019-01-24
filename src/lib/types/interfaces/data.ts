@@ -1,3 +1,5 @@
+import { rating } from '../aliases'
+
 /**
  * Interface with common data properties
  */

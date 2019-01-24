@@ -1,15 +1,17 @@
+import { rating } from '../types/aliases'
+
 /**
  * Converts various representations of post ratings to the ZenBridge rating type
- * @param rating Post rating received from booru
+ * @param postRating Post rating received from booru
  * @param form Form of the rating
  */
 export default function convertRating(
-  rating: string,
+  postRating: string,
   form: string = 'char'
 ): rating {
   switch (form) {
     case 'char':
-      switch (rating) {
+      switch (postRating) {
         case 's':
           return 'safe'
         case 'q':
@@ -21,10 +23,10 @@ export default function convertRating(
           return 'explicit'
       }
     case 'full':
-      if (rating === 'suggestive') {
+      if (postRating === 'suggestive') {
         return 'questionable'
       } else {
-        return rating as rating
+        return postRating as rating
       }
     default:
       return 'explicit'
