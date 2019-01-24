@@ -44,7 +44,7 @@ class Danbooru2 extends Booru {
     })
   }
 
-  favorite(id: number) {
+  favorite(id: number): Promise<boolean> {
     if (!this.loggedIn) {
       return Promise.reject(
         new Error('Credentials not set or invalid for this booru instance')
@@ -52,14 +52,21 @@ class Danbooru2 extends Booru {
     }
     const uri = this.base + this.uriBuilder.favorite!(id)
     return axios.post(uri, {}, this.fetchOptions).then(
-      res => res.data.success,
+      res => JSON.parse(res.data.is_favorited),
       err => {
-        throw new Error('API call was rejected: ' + err)
+        if (
+          err &&
+          err.response.data.message === 'You have already favorited this post'
+        ) {
+          return true
+        } else {
+          throw new Error('API call was rejected: ' + err)
+        }
       }
     )
   }
 
-  unfavorite(id: number) {
+  unfavorite(id: number): Promise<boolean> {
     if (!this.loggedIn) {
       return Promise.reject(
         new Error('Credentials not set or invalid for this booru instance')
@@ -306,7 +313,7 @@ const Danbooru2Converter: Converter = {
     return {
       about: data.notes,
       active: data.is_active,
-      aliases: data.other_names.split(' '),
+      aliases: data.other_names,
       createdAt: data.created_at,
       creator: {
         id: data.creator_id
@@ -330,7 +337,7 @@ const Danbooru2Converter: Converter = {
       id: data.id,
       name: data.name,
       postCount: data.post_count,
-      postIds: data.post_ids.split(' ').map(parseFloat)
+      postIds: data.post_ids.map(parseFloat)
     }
   },
   wiki(data: any): Wiki {
