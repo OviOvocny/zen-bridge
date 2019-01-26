@@ -121,7 +121,8 @@ test('slices tags to 2', t => {
   return b
     .posts({
       limit: 2,
-      tags: ['cat_girl', 'cat_ears', 'cat_tail']
+      tags: ['cat_girl', 'cat_ears', 'cat_tail'],
+      exclude: ['umbrella', 'dog_ears']
     })
     .then(arr => {
       t.truthy(arr.length === 2)
@@ -134,9 +135,8 @@ test('slices tags to 2', t => {
 test('excludes tags', t => {
   return b
     .posts({
-      limit: 1,
-      tags: ['umbrella'],
-      exclude: ['umbrella']
+      tags: ['in_box'],
+      exclude: ['box']
     })
     .then(arr => {
       t.truthy(arr.length === 0)

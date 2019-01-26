@@ -1,7 +1,8 @@
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { SHA1 } from 'jshashes'
 import { stringify as queryStringify } from 'query-string'
 import Booru from '../booru'
+import { ZenBridgeNetworkError } from '../error'
 import {
   Artist,
   Comment,
@@ -123,6 +124,22 @@ class Moebooru extends Booru {
     )
   }
 
+  protected fetchThrow(err: AxiosError) {
+    if (err.response) {
+      let reason = err.message
+      if (typeof err.response.data === 'object') {
+        reason = err.response.data.reason
+      }
+      throw new ZenBridgeNetworkError(
+        err.response.status,
+        reason,
+        err.config.url || ''
+      )
+    } else {
+      throw err
+    }
+  }
+
   protected genericSingle(type: string, id: number): Promise<any> {
     const uri = (this.uriBuilder as any)[type](id)
     return this.fetch(this.addAuth(uri)).then(data =>
@@ -161,7 +178,7 @@ const MoebooruUriBuilder: UriBuilder = {
     if (query.tags) {
       let tags = query.tags
       if (query.exclude) {
-        tags = tags.concat(query.exclude!.map(t => '-' + t))
+        tags = tags.concat(query.exclude.map(t => '-' + t))
       }
       queryString = queryStringify({
         ...query,

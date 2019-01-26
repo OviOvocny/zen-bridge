@@ -1,3 +1,4 @@
+import { AxiosError } from 'axios'
 import {
   Artist,
   Comment,
@@ -239,8 +240,10 @@ export default abstract class Booru {
    * @param config Axios config object
    */
   protected fetch(path: string, config?: object): Promise<any> {
-    return dataFetcher(this.base, path, this.xml, config)
+    return dataFetcher(this.base, path, this.xml, config).catch(this.fetchThrow)
   }
+
+  protected abstract fetchThrow(err: AxiosError): void
 
   protected genericSingle(type: string, id: number | string): Promise<any> {
     const uri = (this.uriBuilder as any)[type](id)

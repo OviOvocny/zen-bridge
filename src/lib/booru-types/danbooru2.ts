@@ -1,6 +1,7 @@
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { stringify as queryStringify } from 'query-string'
 import Booru from '../booru'
+import { ZenBridgeNetworkError } from '../error'
 import {
   Artist,
   Comment,
@@ -88,6 +89,22 @@ class Danbooru2 extends Booru {
       })
   }
 
+  protected fetchThrow(err: AxiosError) {
+    if (err.response) {
+      let reason = err.message
+      if (typeof err.response.data === 'object') {
+        reason = err.response.data.message
+      }
+      throw new ZenBridgeNetworkError(
+        err.response.status,
+        reason,
+        err.config.url || ''
+      )
+    } else {
+      throw err
+    }
+  }
+
   protected get fetchOptions(): object {
     return this.loggedIn
       ? {
@@ -106,19 +123,22 @@ const Danbooru2UriBuilder: UriBuilder = {
   },
   posts(query: Query.Posts): string {
     let queryString = ''
+    let t: string[] = []
     if (query.tags) {
-      let t = query.tags
-      // Danbooru limitation, probably done wrong
-      if (t.length > 2) {
-        t = t.slice(0, 2)
-      }
-      queryString = queryStringify({
-        ...query,
-        tags: t.join(' ')
-      })
-    } else {
-      queryString = queryStringify(query)
+      t = t.concat(query.tags)
     }
+    if (query.exclude) {
+      t = t.concat(query.exclude.map(tag => `-${tag}`))
+    }
+    // Danbooru limitation, probably done wrong
+    if (t.length > 2) {
+      t = t.slice(0, 2)
+    }
+    queryString = queryStringify({
+      ...query,
+      exclude: undefined,
+      tags: t.join(' ')
+    })
     return '/posts.json?' + queryString
   },
   favorite(id: number): string {
