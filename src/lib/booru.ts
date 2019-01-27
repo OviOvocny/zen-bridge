@@ -243,7 +243,7 @@ export default abstract class Booru {
     return dataFetcher(this.base, path, this.xml, config).catch(this.fetchThrow)
   }
 
-  protected abstract fetchThrow(err: AxiosError): void
+  protected abstract fetchThrow?(err: AxiosError): void
 
   protected genericSingle(type: string, id: number | string): Promise<any> {
     const uri = (this.uriBuilder as any)[type](id)

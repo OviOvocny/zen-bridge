@@ -24,6 +24,12 @@ test.serial('checks salt', t => {
   })
 })
 
+test('gets salt from public getter', t => {
+  const testSalt = 'test--{}'
+  b.salt = testSalt
+  t.is(b.salt, testSalt)
+})
+
 test('rejects invalid credentials', t => {
   b.credentials = undefined
   t.plan(2)
@@ -242,6 +248,12 @@ test('searches notes', t => {
     .catch(err => {
       t.fail(err)
     })
+})
+
+test('does NOT get note by ID (not possible in Moebooru)', async t => {
+  await t.throws(() => {
+    b.note(1)
+  })
 })
 
 test('adds notes to a Post', t => {

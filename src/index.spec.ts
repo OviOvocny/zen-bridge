@@ -42,7 +42,7 @@ test.serial('aggregates posts from multiple Boorus', t => {
 test.serial('aggregates artists from multiple Boorus', t => {
   return bridge
     .aggregate<Artist>('artists', {
-      nameMatches: 'momiji'
+      nameMatches: 'nico'
     })
     .then(artists => {
       t.truthy(artists)
@@ -91,7 +91,8 @@ test.serial('dedupes', t => {
     }
   ]
   t.is(
-    bridge.dedupe<Post>(testData, ZenBridge.builtInComparers.posts)[1].data.length,
+    bridge.dedupe<Post>(testData, ZenBridge.builtInComparers.posts)[1].data
+      .length,
     0
   )
 })

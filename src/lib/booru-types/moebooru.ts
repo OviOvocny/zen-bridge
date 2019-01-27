@@ -2,7 +2,6 @@ import axios, { AxiosError } from 'axios'
 import { SHA1 } from 'jshashes'
 import { stringify as queryStringify } from 'query-string'
 import Booru from '../booru'
-import { ZenBridgeNetworkError } from '../error'
 import {
   Artist,
   Comment,
@@ -118,26 +117,19 @@ class Moebooru extends Booru {
       .then(this.converter.user)
   }
 
-  note(): Promise<Note> {
+  note(id: number): Promise<Note> {
     throw new Error(
-      `Moebooru cannot show a note by ID, use the 'notes' method with a post ID`
+      `Moebooru cannot show a note by ID (passed ${id}), use the 'notes' method with a post ID`
     )
   }
 
   protected fetchThrow(err: AxiosError) {
     if (err.response) {
-      let reason = err.message
       if (typeof err.response.data === 'object') {
-        reason = err.response.data.reason
+        err.message = err.response.data.reason
       }
-      throw new ZenBridgeNetworkError(
-        err.response.status,
-        reason,
-        err.config.url || ''
-      )
-    } else {
-      throw err
     }
+    throw err
   }
 
   protected genericSingle(type: string, id: number): Promise<any> {

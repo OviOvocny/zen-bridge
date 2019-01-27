@@ -78,6 +78,19 @@ test.serial('adds favorite', t => {
     })
 })
 
+test.serial('returns true for already favorited', t => {
+  t.plan(3)
+  login()
+  t.true(b.loggedIn)
+  return b
+    .favorite(1)
+    .then(t.true)
+    .then(() => {
+      b.credentials = undefined
+      t.false(b.loggedIn)
+    })
+})
+
 test.serial('removes favorite', t => {
   t.plan(3)
   login()

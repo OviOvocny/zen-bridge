@@ -1,7 +1,6 @@
 import axios, { AxiosError } from 'axios'
 import { stringify as queryStringify } from 'query-string'
 import Booru from '../booru'
-import { ZenBridgeNetworkError } from '../error'
 import {
   Artist,
   Comment,
@@ -91,18 +90,11 @@ class Danbooru2 extends Booru {
 
   protected fetchThrow(err: AxiosError) {
     if (err.response) {
-      let reason = err.message
       if (typeof err.response.data === 'object') {
-        reason = err.response.data.message
+        err.message = err.response.data.message
       }
-      throw new ZenBridgeNetworkError(
-        err.response.status,
-        reason,
-        err.config.url || ''
-      )
-    } else {
-      throw err
     }
+    throw err
   }
 
   protected get fetchOptions(): object {
