@@ -237,7 +237,7 @@ const Danbooru2Converter: Converter = {
     const post: Post = {
       active: !data.is_deleted,
       children: data.has_children
-        ? data.children_ids.split(' ').map(parseFloat)
+        ? data.children?.map((child: Post) => child.id)
         : [],
       createdAt: data.created_at,
       creator: {
