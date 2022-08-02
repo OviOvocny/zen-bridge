@@ -1,6 +1,6 @@
 // tslint:disable:no-expression-statement
 // tslint:disable:object-literal-sort-keys
-import { test } from 'ava'
+import test from 'ava'
 import convertXml from './xml-converter'
 
 test('converts sample xml', t => {

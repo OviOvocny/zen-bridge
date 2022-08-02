@@ -91,6 +91,7 @@ class Danbooru2 extends Booru {
   protected fetchThrow(err: AxiosError) {
     if (err.response) {
       if (typeof err.response.data === 'object') {
+        // @ts-ignore
         err.message = err.response.data.message
       }
     }

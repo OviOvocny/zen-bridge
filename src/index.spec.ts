@@ -1,6 +1,6 @@
 // tslint:disable:no-expression-statement
 // tslint:disable:object-literal-sort-keys
-import { test } from 'ava'
+import test from 'ava'
 import ZenBridge, { BooruResult, Danbooru2, Moebooru } from '.'
 import { Artist, Comment, Note, Post } from './lib/types/interfaces/data'
 
